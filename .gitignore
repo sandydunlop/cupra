@@ -1,0 +1,7 @@
+.gradle/file-system.probe
+/.gradle
+/.vscode
+/.settings
+/cupra/.settings
+cupra.code-workspace
+

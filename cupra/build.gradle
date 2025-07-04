@@ -1,0 +1,96 @@
+plugins {
+    id 'java-library'
+    id 'java'
+	id 'maven-publish'
+}
+
+group = 'io.github.sandydunlop'
+version = '0.1.0'
+
+base {
+    archivesName = "cupra"
+}
+
+apply plugin: 'java'
+apply plugin: 'java-library'
+
+repositories {
+    mavenCentral()
+    google()
+}
+
+dependencies {
+    testImplementation libs.junit.jupiter
+    // implementation group: 'com.gradleup.shadow', name: 'com.gradleup.shadow.gradle.plugin', version: '8.3.6', ext: 'pom'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation ("org.apache.commons:commons-lang3:3.17.0")
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '3.0.0-beta3'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.17.0'
+    // runtimeOnly group: 'com.gradleup.shadow', name: 'shadow-gradle-plugin', version: '8.3.6'
+    implementation 'com.dorkbox:Notify:4.5'
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
+
+// Apply a specific Java toolchain to ease working on different environments.
+java {
+    withJavadocJar()
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.named('test') {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
+}
+
+jar.doLast {
+    ant.checksum file: archivePath
+}
+
+// configure the maven publication
+publishing {
+    publications {
+        myPub(MavenPublication) {
+            from components.java
+            pom {
+                name = 'Cupra'
+                description = 'Cupra UI Framework'
+                url = 'https://github.com/sandydunlop/cupra'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://raw.githubusercontent.com/sandydunlop/cupra/refs/heads/dev/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'sandydunlop'
+                        name = 'Sandy Dunlop'
+                        email = 'sandy.dunlop@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/sandydunlop/cupra.git'
+                    developerConnection = 'scm:git:ssh://github.com:sandydunlop/cupra.git'
+                    url = 'https://github.com/sandydunlop/cupra'
+                }
+            }
+        }
+    }
+
+	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+	repositories {
+		// Add repositories to publish to here.
+		// Notice: This block does NOT have the same function as the block in the top level.
+		// The repositories here will be used for publishing your artifact, not for
+		// retrieving dependencies.
+	}
+}
