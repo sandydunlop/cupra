@@ -1,7 +1,6 @@
 package io.github.sandydunlop.cupra.common.widgets;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import io.github.sandydunlop.cupra.common.render.BaseRenderer;
@@ -20,7 +19,6 @@ public class CContainer extends CWidget {
 	protected int backgroundColor = CWidget.getPalette().REGULAR_BACKGROUND;
 	protected boolean hasBorder = false;
 	protected int borderColor = CWidget.getPalette().HOVERED_BORDER;
-	private int layoutAlgorithm = 0;
 
 
     public CContainer(CContainer parent, boolean isHorizontal) {
@@ -47,11 +45,6 @@ public class CContainer extends CWidget {
 
 
 	// === Properties ===
-
-
-    public void setLayoutAlgorithm(int algorithm) {
-        this.layoutAlgorithm = algorithm;
-    }
 
 
 	public void setParent(CContainer parent){
@@ -137,9 +130,9 @@ public class CContainer extends CWidget {
 	@Override
     public int getCalculatedX() {
         if (parent != null){
-            return parent.getCalculatedX() + x; // + padding;
+            return parent.getCalculatedX() + x;
         }else{
-            return x; // + padding;
+            return x;
         }
     }
 
@@ -147,9 +140,9 @@ public class CContainer extends CWidget {
 	@Override
     public int getCalculatedY(){
         if (parent != null){
-            return parent.getCalculatedY() + y; // + padding;
+            return parent.getCalculatedY() + y;
         }else{
-            return y; // + padding;
+            return y;
         }
     }
 
@@ -183,7 +176,7 @@ public class CContainer extends CWidget {
 			for(CWidget widget : contents) {
 				w += widget.getCalculatedWidth() + padding;
 			}
-			return w > 0 ? w : getDefaultWidth(); //getCalculatedWidth();
+			return w > 0 ? w : getDefaultWidth();
 		}
     }
 
@@ -235,9 +228,6 @@ public class CContainer extends CWidget {
 				if (widget.getWidth() == 0 || widget instanceof CContainer) {
 					widget.setWidth(width  - padding*2> 0 ? width - (padding*2) : widget.getDefaultWidth()); // Why not calculatedWidth?
 				}
-				// if (widget.getHeight() == 0 || widget instanceof CContainer) {
-				//     widget.setHeight(widget.getCalculatedHeight());
-				// }
 				int h = widget.getCalculatedHeight();
 				if (widget instanceof CContainer) {
 					widget.setHeight(h);
@@ -289,9 +279,6 @@ public class CContainer extends CWidget {
 			if (widget.isExpandable()) {
 				expandableWidgets.add(widget);
 			} else {
-				// if (widget.getWidth() == 0 || widget instanceof CContainer) {
-				//     widget.setWidth(widget.getCalculatedWidth());
-				// }
 				int w = widget.getCalculatedWidth();
 				if (widget instanceof CContainer) {
 					widget.setWidth(w);
