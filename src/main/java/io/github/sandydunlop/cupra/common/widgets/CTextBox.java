@@ -85,6 +85,19 @@ public class CTextBox extends CLabel {
     }
 
 
+    @Override
+    public int getDefaultWidth() {
+        return 200;
+    }
+
+
+    @Override
+    public int getDefaultHeight() {
+        bmf = BitmapFontFactory.load(font);
+        return bmf.getHeight() + TEXT_PADDING*2;
+    }
+
+
     //
     // === Layout & Render ===
     //

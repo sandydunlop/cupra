@@ -216,17 +216,16 @@ public class CContainer extends CWidget {
 
 
 	private void layoutVertical() {
-		if ("middle".equals(id)){
-			id = id;
-		}
 		int nonexSize = 0;
 		List<CWidget> expandableWidgets = new ArrayList<>();
 		for (CWidget widget : contents) {
 			if (widget.isExpandable()) {
 				expandableWidgets.add(widget);
 			} else {
-				if (widget.getWidth() == 0 || widget instanceof CContainer) {
-					widget.setWidth(width  - padding*2> 0 ? width - (padding*2) : widget.getDefaultWidth()); // Why not calculatedWidth?
+				if (widget instanceof CContainer) {
+					widget.setWidth(width  - padding*2);
+				} else  if (widget.getWidth() == 0) {
+					widget.setWidth(widget.getCalculatedWidth());
 				}
 				int h = widget.getCalculatedHeight();
 				if (widget instanceof CContainer) {
@@ -283,8 +282,10 @@ public class CContainer extends CWidget {
 				if (widget instanceof CContainer) {
 					widget.setWidth(w);
 				}
-				if (widget.getHeight() == 0 || widget instanceof CContainer) {
-					widget.setHeight(height > 0 ? height - (padding*2) : widget.getDefaultHeight());
+				if (widget instanceof CContainer) {
+					widget.setHeight(height - (padding*2));
+				} else  if (widget.getHeight() == 0) {
+					widget.setHeight(widget.getCalculatedHeight());
 				}
 				nonexSize += widget.getWidth() + padding;
 			}

@@ -102,6 +102,18 @@ public class CDropdownListBox extends CWidget {
     }
 
 
+    @Override
+    public int getDefaultWidth() {
+        return textbox.getDefaultWidth();
+    }
+
+
+    @Override
+    public int getDefaultHeight() {
+        return textbox.getDefaultHeight();
+    }
+
+
     public void setSelectedIndex(int index) {
         listbox.setSelectedIndex(index);
     }   
