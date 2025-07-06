@@ -19,8 +19,9 @@ public class CTextBox extends CLabel {
     private int caretColor = 0xFFFFFFFF;
     private BitmapFont bmf = null;
     private FontSpec selectedFont = null;
-    private CKeyPressedAction onKeyPressed;
-    private CEnterPressedAction onEnterPressed;
+    private KeyPressedAction onKeyPressed;
+    private EnterPressedAction onEnterPressed;
+    private MousClickedAction onMouseClicked;
     
     protected double mousePressX = -1;
     protected double mousePressY = -1;
@@ -29,6 +30,7 @@ public class CTextBox extends CLabel {
     protected int selectFromPos = -1;
     protected int selectToPos = -1;
     protected boolean selecting = false;
+    protected boolean editable = true;
 
 
     public CTextBox(CContainer parent) {
@@ -65,6 +67,21 @@ public class CTextBox extends CLabel {
     @Override
     public String getText() {
         return this.text;
+    }
+
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+        if (editable) {
+            this.mousePointer = MousePointer.I_BEAM;
+        } else {
+            this.mousePointer = MousePointer.ARROW;
+        }
+    }
+
+
+    public boolean getEditable() {
+        return this.editable;
     }
 
 
@@ -118,7 +135,7 @@ public class CTextBox extends CLabel {
                     renderY + renderHeight - TEXT_PADDING);
             renderX = renderX + TEXT_PADDING - startOffset;
             renderer.drawText(text, renderX, renderY + TEXT_PADDING);
-            if (selecting) {
+            if (editable && selecting) {
                 selectedFont.mergeFrom(font);
                 selectedFont.setColor(CWidget.getPalette().SELECTED_TEXT);
                 renderer.setFont(selectedFont);
@@ -126,7 +143,7 @@ public class CTextBox extends CLabel {
             }
             renderer.disableClipping();
         }
-        if (isFocused()) {
+        if (editable && isFocused()) {
             if (PlatformServices.getInstance().isCursorVisible()) {
                 renderer.drawVerticalLine(getCalculatedX() + TEXT_PADDING + caretX - startOffset, getCalculatedY() + 1, getCalculatedY() + renderHeight - 1, caretColor);
             }
@@ -154,22 +171,22 @@ public class CTextBox extends CLabel {
     // === Keyboard ===
 
 
-    public interface CKeyPressedAction {
+    public interface KeyPressedAction {
         void onKeyPressed(CKeyEvent key);
     }
 
 
-    public interface CEnterPressedAction {
+    public interface EnterPressedAction {
         void onEnterPressed(CTextBox enter);
     }
 
 
-    public void onKeyPressed(CKeyPressedAction action) {
+    public void onKeyPressed(KeyPressedAction action) {
         this.onKeyPressed = action;
     }
 
 
-    public void onEnterPressed(CEnterPressedAction action) {
+    public void onEnterPressed(EnterPressedAction action) {
         this.onEnterPressed = action;
     }
 
@@ -234,6 +251,9 @@ public class CTextBox extends CLabel {
 
 	@Override
 	public void charTyped(CKeyEvent e) {
+        if (!editable) {
+            return;
+        }
         if ((PlatformServices.getInstance().isMacOS() && e.isCommandPressed()) || 
             (!PlatformServices.getInstance().isMacOS()) && e.isControlPressed()){
             handleControlKeypress(e);
@@ -266,9 +286,9 @@ public class CTextBox extends CLabel {
 
 	@Override
 	public void keyPressed(CKeyEvent k) {
-        //TODO: Check is shift/ctrl/alt/cmd is pressed here
-        // arrow keys have different functionality depending on both
-        // these modifiers and which opertating system is running
+        if (!editable) {
+            return;
+        }
         switch (k.getKeyCode()) {
             case CKeyEvent.KEY_LEFT:
                 leftKeyPressed(k);
@@ -411,7 +431,6 @@ public class CTextBox extends CLabel {
     }
    
 
-    private MousClickedAction onMouseClicked;
     public interface MousClickedAction {
         void onMouseClicked(CTextBox enter);
     }
@@ -424,6 +443,7 @@ public class CTextBox extends CLabel {
 
     @Override
     public boolean mouseDoubleClicked(CMouseEvent mouse) {
+        if (!editable) return false;
         clearSelection();
         caretPos = calculateCaretPos(mouse);
         selectFromPos = caretPos;
@@ -435,6 +455,7 @@ public class CTextBox extends CLabel {
 
     @Override
     public boolean mouseTripleClicked(CMouseEvent mouse) {
+        if (!editable) return false;
         selectAll();
         return true;
     }
@@ -442,21 +463,23 @@ public class CTextBox extends CLabel {
 
     @Override
     public boolean mousePressed(CMouseEvent mouse) {
-        caretPos = calculateCaretPos(mouse);
-        if (mouse.isShiftPressed() && selectFromPos != -1) {
-            selectToPos = caretPos;
-            updateSelection();
-        } else {
-            clearSelection();
-            selectFromPos = caretPos;
+        if (editable) {
+            caretPos = calculateCaretPos(mouse);
+            if (mouse.isShiftPressed() && selectFromPos != -1) {
+                selectToPos = caretPos;
+                updateSelection();
+            } else {
+                clearSelection();
+                selectFromPos = caretPos;
+            }
+            setCaretX();
+            mousePressX = mouse.getX();
+            mousePressY = mouse.getY();
         }
-        setCaretX();
         PlatformServices.getInstance().render();
         if (this.onMouseClicked != null) {
             this.onMouseClicked.onMouseClicked(this);
         }
-        mousePressX = mouse.getX();
-        mousePressY = mouse.getY();
         return true;
     }
 
@@ -469,6 +492,7 @@ public class CTextBox extends CLabel {
 
     @Override
     public boolean mouseDragged(CMouseEvent mouse) {
+        if (!editable) return false;
         if (mouse.getButton() != CMouseEvent.PRIMARY_BUTTON) return false;
         caretPos = calculateCaretPos(mouse);
         selectToPos = caretPos;

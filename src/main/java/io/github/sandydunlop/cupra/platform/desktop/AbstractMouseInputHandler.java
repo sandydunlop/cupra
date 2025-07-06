@@ -12,7 +12,7 @@ import io.github.sandydunlop.cupra.common.widgets.CWidget;
  * </p>
  */
 public abstract class AbstractMouseInputHandler {
-    private AbstractMouseInputHandler() {
+    protected AbstractMouseInputHandler() {
     }
     /**
      * Invoked when a mouse button has been pressed on a widget

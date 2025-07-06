@@ -29,7 +29,6 @@ class SimpleHorizontalTests {
         screen.setWidth(SCREEN_WIDTH);
         screen.setHeight(SCREEN_HEIGHT);
         screen.setPadding(0);
-		screen.setLayoutAlgorithm(LAYOUT_ALGORITHM);
 
 		footer = new CContainer(screen, true);
 		footer.setPadding(0);

@@ -15,18 +15,21 @@ import io.github.sandydunlop.cupra.common.fonts.BitmapFont;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFontFactory;
 import io.github.sandydunlop.cupra.common.fonts.FontSpec;
 import io.github.sandydunlop.cupra.common.input.KeyboardInput;
+import io.github.sandydunlop.cupra.common.input.MouseInput;
 import io.github.sandydunlop.cupra.common.logging.LogManager;
 import io.github.sandydunlop.cupra.common.logging.Logger;
 import io.github.sandydunlop.cupra.common.palette.ColorPalette;
 
 
-public abstract class CWidget implements KeyboardInput{
+public abstract class CWidget implements KeyboardInput, MouseInput {
 	protected static final Logger LOGGER = LogManager.getLogger("Cupra");
     private static ColorPalette palette = ColorPalette.Blueberry;
     private static int baseFontSize = 14;
     private static boolean cachedFontsInvalidated = false;
+    private int debug = 0;
     protected CContainer parent = null;
     protected String id = null;
+    protected FontSpec font;
     protected int x = 0;
     protected int y = 0;
     protected int width = 0;
@@ -34,23 +37,20 @@ public abstract class CWidget implements KeyboardInput{
     protected int maxWidth = 0;
     protected int maxHeight = 0;
     protected int color = 0;
-    protected boolean expandable;
-    protected boolean scrollable;
-    protected boolean usesCustomLayout = false;
-    protected int startX = 0;
-    protected List<CWidget> contents = new ArrayList<>();
+	protected int padding = 0;
     protected boolean resizeToContents = false;
-    protected FontSpec font;
-    protected MousePointer mousePointer = MousePointer.ARROW;
+    protected boolean focusable = false;
+    protected boolean focused = false;
+    protected boolean expandable = false;
+    protected boolean scrollable = false;
     protected boolean visible = true;
     protected boolean enabled = true;
-	protected int padding = 0;
+    protected boolean usesCustomLayout = false;
     protected boolean mouseOverEffects = false;
-    private int debug = 0;
-    private boolean isHyperlink = false;
-    private boolean isFocusable = false;
-    private boolean isFocused = false;
-    private String tooltip = null;
+    protected boolean hyperlink = false;
+    protected String tooltip = null;
+    protected List<CWidget> contents = new ArrayList<>();
+    protected MousePointer mousePointer = MousePointer.ARROW;
 
 
     protected CWidget(CContainer parent) {
@@ -222,16 +222,6 @@ public abstract class CWidget implements KeyboardInput{
     }
 
 
-    public int getStartX() {
-        return this.startX;
-    }
-
-
-    public void setStartX(int sx) {
-        this.startX = sx;
-    }
-
-
     public int getCalculatedX() {
         if (parent != null){
             return parent.getCalculatedX() + x;
@@ -281,7 +271,7 @@ public abstract class CWidget implements KeyboardInput{
 
 
     public void setFocused(boolean focused) {
-        this.isFocused = focused;
+        this.focused = focused;
     }
 
 
@@ -307,12 +297,12 @@ public abstract class CWidget implements KeyboardInput{
     
     
     public void setIsHoveringOverHyperlink(boolean b) {
-        this.isHyperlink = b;
+        this.hyperlink = b;
     }
 
 
     public boolean isHoveringOverHyperlink() {
-        return this.isHyperlink;
+        return this.hyperlink;
     }
 
 
@@ -337,17 +327,17 @@ public abstract class CWidget implements KeyboardInput{
 
 
     public void setFocusable(boolean focusable) {
-        this.isFocusable = focusable;
+        this.focusable = focusable;
     }
 
 
     public boolean isFocusable() {
-        return this.isFocusable;
+        return this.focusable;
     }
 
 
     public boolean isFocused() {
-        return this.isFocused;
+        return this.focused;
     }
 
 

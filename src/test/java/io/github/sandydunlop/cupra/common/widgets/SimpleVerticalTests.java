@@ -29,7 +29,6 @@ class SimpleVerticalTests {
         screen.setWidth(SCREEN_WIDTH);
         screen.setHeight(SCREEN_HEIGHT);
         screen.setPadding(0);
-		screen.setLayoutAlgorithm(LAYOUT_ALGORITHM);
 
 		header = new CContainer(screen, true);
         header.setPadding(0);

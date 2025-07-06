@@ -29,7 +29,6 @@ class NestedVerticalTests {
         screen.setWidth(SCREEN_WIDTH);
         screen.setHeight(SCREEN_HEIGHT);
         screen.setPadding(0);
-		screen.setLayoutAlgorithm(LAYOUT_ALGORITHM);
 
 		body = new CContainer(screen, true);
 		body.setPadding(0);
