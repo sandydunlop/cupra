@@ -56,10 +56,10 @@ public class CTextBox extends CLabel {
     public CTextBox setText(String text) {
         super.setText(text);
         this.bmf = BitmapFontFactory.load(this.font);
-        this.caretPos = this.text.length();
-        if (bmf != null) {
-            this.caretX = this.bmf.stringWidth(this.text);
+        if (caretPos > text.length()) {
+            caretPos = text.length();
         }
+        setCaretX();
         return this;
     }
 
