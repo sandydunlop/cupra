@@ -10,15 +10,13 @@ public abstract class CAbstractScrollable extends CWidget {
     protected int defaultThickness = 16;
     protected int defaultSize = 200;
     protected Orientation orientation = Orientation.HORIZONTAL;
+    protected PositionChangedAction onPositionChanged;
     protected boolean showButtons = false;
-
     protected double min = 0;
     protected double max = 100;
-
     protected int contentHeight = 0;
     protected double scrollAmount = 0;
     protected boolean scrolling = false;
-
     private double mousePressedPosition = 0;
     private double mousePressedScrollAmount = 0;
 
@@ -33,6 +31,16 @@ public abstract class CAbstractScrollable extends CWidget {
         this.orientation = orientation;
         this.width = getDefaultWidth();
         this.height = getDefaultHeight();
+    }
+
+
+    public interface PositionChangedAction {
+        void onPositionChanged(double position);
+    }
+
+
+    public void onPositionChanged(PositionChangedAction action) {
+        onPositionChanged = action;
     }
 
 
@@ -62,9 +70,12 @@ public abstract class CAbstractScrollable extends CWidget {
 
 
     public double getMax() {
-        //TODO: When scrollbar is associated with scrollable content,
-        //this value should be calculated
         return max;
+    }
+
+
+    protected double getMaxScroll() {
+        return Math.max(0, getMax() - getHeight());
     }
 
 
@@ -77,6 +88,21 @@ public abstract class CAbstractScrollable extends CWidget {
     @Override
     public int getDefaultHeight() {
         return orientation == Orientation.HORIZONTAL ? defaultThickness : defaultSize;
+    }
+
+
+    protected double getScrollAmount() {
+    	return scrollAmount;
+    }
+
+
+    protected void setScrollAmount(double amount) {
+    	scrollAmount = Math.clamp(amount, 0.0, getMaxScroll());
+    }
+
+
+    protected void updateScrollingState(CMouseEvent mouse) {
+    	scrolling = mouse.getButton() == CMouseEvent.PRIMARY_BUTTON && isMouseOver(mouse);
     }
 
 
@@ -110,7 +136,7 @@ public abstract class CAbstractScrollable extends CWidget {
 
 
     protected int getScrollerStart(int renderSize, int renderPosition, int scrollerSize) {
-        int scrollerStart = (int)scrollAmount * (renderSize - scrollerSize) / (int)getMax() + renderPosition;
+        int scrollerStart = (int)scrollAmount * (renderSize - scrollerSize) / (int)getMaxScroll() + renderPosition;
         if (scrollerStart < renderPosition) {
             scrollerStart = renderPosition;
         }
@@ -126,7 +152,7 @@ public abstract class CAbstractScrollable extends CWidget {
 
 
     //
-    // === Mouse and Keyboard ===
+    // === Mouse ===
     //
 
     
@@ -148,18 +174,6 @@ public abstract class CAbstractScrollable extends CWidget {
 		}
 		return hovered;
     }
-
-
-    // protected CWidget internalHoveredWidget(CMouseEvent mouse) {
-    //     if (content != null) {
-    //         for (CWidget widget : content.contents()) {
-    //             if (widget.isMouseOver(mouse)) {
-    //                 return widget;
-    //             }
-    //         }
-    //     }
-    //     return null;
-    // }
 
 
     @Override
@@ -187,23 +201,15 @@ public abstract class CAbstractScrollable extends CWidget {
     public boolean mouseDragged(CMouseEvent mouse) {
         if (mouse.getButton() != CMouseEvent.PRIMARY_BUTTON || !scrolling) return false;
         int renderSize = getRenderSize();
-        double renderPosition = getRenderPosition();
         double mousePosition = orientation == Orientation.HORIZONTAL ? mouse.getX() : mouse.getY();
-        if (mousePosition < renderPosition) {
-            // Too far up
-        	setScrollAmount(0.0);
-        } else if (mousePosition > renderPosition + renderSize) {
-            // Too far down
-        	setScrollAmount(getMax());
-        } else {
-            double howMuchItCanMove = (double)renderSize - getScrollerSize();
-            double dragDistance = mousePosition - mousePressedPosition;
-            double ratioDistanceToAmount = getMax() / howMuchItCanMove;
-            double scrollDistance = dragDistance * ratioDistanceToAmount;
-            double newScrollAmount = mousePressedScrollAmount + scrollDistance;
-            // LOGGER.debug("mousePressedScrollAmount={}, dragDistance={}, newScrollAmount={}", 
-            //         mousePressedScrollAmount, dragDistance, newScrollAmount);
-            setScrollAmount(newScrollAmount);
+        double howMuchItCanMove = (double)renderSize - getScrollerSize();
+        double dragDistance = mousePosition - mousePressedPosition;
+        double ratioDistanceToAmount = getMaxScroll() / howMuchItCanMove;
+        double scrollDistance = dragDistance * ratioDistanceToAmount;
+        double newScrollAmount = mousePressedScrollAmount + scrollDistance;
+        setScrollAmount(newScrollAmount);
+        if (onPositionChanged != null) {
+            this.onPositionChanged.onPositionChanged(scrollAmount);
         }
         return true;
     }
@@ -213,70 +219,10 @@ public abstract class CAbstractScrollable extends CWidget {
     public boolean mouseScrolled(CMouseEvent mouse) {
         double change = mouse.getVerticalAmount() * 0.05 * getMax() / 2.0;
         double newScrollAmount = getScrollAmount() + change;
-        // LOGGER.debug("scrollAmount={}, change={}, newScrollAmount={}", 
-        //         scrollAmount, change, newScrollAmount);
         setScrollAmount(newScrollAmount);
+        if (onPositionChanged != null) {
+            this.onPositionChanged.onPositionChanged(scrollAmount);
+        }
         return true;
-    }
-
-
-    //
-    // === Scrolling ===
-    //
-
-
-    // // This should be called for web page type widgets but not list boxes etc
-    // protected synchronized void calculateHeight() {
-    //     if (this.content != null){
-    //         if (contentHeight == 0) {
-    //             int height = 0;
-    //             for (CWidget widget : content.contents()) {
-    //                 if (widget.getY() + widget.getHeight() > height) {
-    //                     height = widget.getY() + widget.getHeight() ;
-    //                 }
-    //             }
-    //             contentHeight = height;
-    //         }
-    //         content.setHeight(contentHeight);
-    //     }
-    // }
-
-
-    // // This should be called for listbox type widgets, but not web pages etc
-    // public synchronized void setContentHeight(int height) {
-    //     contentHeight = height;
-    //     if (content != null) {
-    //         content.setHeight(height);
-    //     }
-    // }
-
-
-    // public synchronized int getContentHeight() {
-    //     return contentHeight;
-    // }
-
-
-    // public int getMaxScroll() {
-    //     return Math.max(0, max - (this.getHeight()));
-    // }
-
-
-    // protected int getMaxPosition() {
-    //     return this.getContentHeight();
-    // }
-    
-
-    protected double getScrollAmount() {
-    	return scrollAmount;
-    }
-
-
-    protected void setScrollAmount(double amount) {
-    	scrollAmount = Math.clamp(amount, 0.0, getMax());
-    }
-
-
-    protected void updateScrollingState(CMouseEvent mouse) {
-    	scrolling = mouse.getButton() == CMouseEvent.PRIMARY_BUTTON && isMouseOver(mouse);
     }
 }

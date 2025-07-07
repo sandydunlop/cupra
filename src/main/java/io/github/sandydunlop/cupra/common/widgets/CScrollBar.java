@@ -43,7 +43,7 @@ public class CScrollBar extends CAbstractScrollable {
 
     @Override
     public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
-        if (getMax() > 0) {
+        if (getMaxScroll() > 0) {
             int renderX = getCalculatedX();
             int renderY = getCalculatedY();
             int renderSize = getRenderSize();
@@ -51,7 +51,6 @@ public class CScrollBar extends CAbstractScrollable {
             int renderPosition = getRenderPosition();
             int scrollerSize = getScrollerSize();
             int scrollerStart = getScrollerStart(renderSize, renderPosition, scrollerSize);
-
             if (orientation == Orientation.HORIZONTAL) {
                 renderer.fill(renderX, renderY, 
                         renderX + renderSize, renderY + renderThickness, 
@@ -76,7 +75,6 @@ public class CScrollBar extends CAbstractScrollable {
 
 
     public synchronized void scrollTo(CWidget widget){
-        // getScrollAmount();
         if (widget != null) {
             if (widget.getY() - this.scrollAmount < 0) {
                 scrollAmount = Math.max(0, widget.getY());

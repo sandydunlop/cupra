@@ -79,9 +79,6 @@ public class CListBoxEntry extends CWidget {
 		renderX = getCalculatedX();
 		renderY = getCalculatedY();
 		int w = getWidth();
-		if (listBox != null && listBox.getMaxScroll() > 0) {
-			w -= 6;
-		}
 		if (isSelected()) {
 			backgroundColor = CWidget.getPalette().SELECTED_BACKGROUND;
 			textColor = CWidget.getPalette().SELECTED_TEXT;
