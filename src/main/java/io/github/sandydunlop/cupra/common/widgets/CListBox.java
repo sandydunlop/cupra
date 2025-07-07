@@ -126,14 +126,18 @@ public class CListBox extends CScrollableContainer {
             return;
         }
 
-        // int contentWidth = width;
-        // if (getMaxScroll() > 0) {
-        //     contentWidth -= 6;
-        // }
-        content.setWidth(width);
+        content.setWidth(width - verticalScrollBar.getWidth());
         for (CWidget widget : content.contents()) {
-            widget.setWidth(width);
+            widget.setWidth(width - verticalScrollBar.getWidth());
         }
+        super.layout();
+    }
+
+
+    @Override
+    public void setHeight(int height) {
+        super.setHeight(height);
+        super.layout();
     }
 
 
@@ -167,7 +171,7 @@ public class CListBox extends CScrollableContainer {
             item.font = this.font;
         }
         item.setY(content.contents().size() * item.getHeight());
-        item.setWidth(this.width);
+        item.setWidth(this.width - verticalScrollBar.getWidth());
         item.setParent(content);
         item.setListBox(this);
         content.contents().add(item);
@@ -189,7 +193,7 @@ public class CListBox extends CScrollableContainer {
         if (item.font == null) {
             item.font = this.font;
         }
-        item.setWidth(this.width);
+        item.setWidth(this.width - verticalScrollBar.getWidth());
         item.setParent(content);
         item.setListBox(this);
         
@@ -269,17 +273,18 @@ public class CListBox extends CScrollableContainer {
                 CWidget widget = content.contents().get(0);
                 itemHeight = widget.getCalculatedHeight();
             }
-            content.setWidth(getWidth());
+            content.setWidth(getWidth() - verticalScrollBar.getWidth());
             int renderY = 0;
             for (CWidget widget : content.contents()) {
                 widget.setY(renderY);
-                widget.setWidth(this.width);
+                widget.setWidth(this.width - verticalScrollBar.getWidth());
                 widget.setHeight(itemHeight);
                 renderY += widget.getHeight();
             }
             setContentHeight(content.contents().size() * itemHeight);
             double sa = getScrollAmount(); // This puts content at the correct position
             setScrollAmount(sa);
+            super.layout();
         }
     }
 
@@ -292,7 +297,7 @@ public class CListBox extends CScrollableContainer {
         super.mousePressed(mouse);
         if (!this.isMouseOver(mouse)) return false;
 
-        if (mouse.getX() < this.getScrollbarPositionX()) {
+        if (mouse.getX() <= content.getWidth()) {
             CListBoxEntry entry = this.getEntryAtPosition(mouse);
             if (entry != null) {
                 setSelected(entry);

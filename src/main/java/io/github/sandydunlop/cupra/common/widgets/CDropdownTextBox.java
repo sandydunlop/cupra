@@ -39,7 +39,13 @@ public class CDropdownTextBox extends CDropdownListBox {
      * @param parent The parent container to which this widget will be added.
      */
     public CDropdownTextBox(CContainer parent) {
+        this(parent, "");
+    }
+
+
+    public CDropdownTextBox(CContainer parent, String text) {
         super(parent);
+        textbox.setText(text);
         textbox.setEditable(true);
         textbox.onEnterPressed(action -> {
             if (this.onEnterPressed != null) {

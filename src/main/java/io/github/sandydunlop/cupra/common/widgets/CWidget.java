@@ -360,7 +360,9 @@ public abstract class CWidget implements KeyboardInput, MouseInput {
         }
         if (width > 0) {
             return width;
-        }else{
+        } else if (getDefaultWidth() > 0) {
+            return getDefaultWidth();
+        } else {
             LOGGER.debug("getCalculatedWidth: Widget with unknown width. id: {}", id);
             return 0;
         }
@@ -373,6 +375,8 @@ public abstract class CWidget implements KeyboardInput, MouseInput {
         }
         if (height > 0) {
             return height;
+        } else if (getDefaultHeight() > 0) {
+            return getDefaultHeight();
         }else{
             LOGGER.debug("getCalculatedHeight: Widget with unknown height. id: {}", id);
             return 0;

@@ -102,6 +102,33 @@ public class CDropdownListBox extends CWidget {
     }
 
 
+    @Override
+    public int getDefaultWidth() {
+        return textbox.getDefaultWidth();
+    }
+
+
+    @Override
+    public int getDefaultHeight() {
+        return textbox.getDefaultHeight();
+    }
+
+
+    public void setSelectedIndex(int index) {
+        listbox.setSelectedIndex(index);
+    }   
+
+
+    public int getSelectedIndex() {
+        return listbox.getIndexOf(listbox.getSelected());
+    }
+
+
+    public CListBoxEntry getSelected() {
+        return listbox.getSelected();
+    }
+
+
     /**
      * Sets the specified {@link CListBoxEntry} as the selected entry in the list box.
      *

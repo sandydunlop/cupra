@@ -224,8 +224,13 @@ public class CupraScreen extends CContainer {
 
     @Override
     public CWidget hoveredWidget(CMouseEvent mouse, DepthLimit depth){
-        if (getOverlaid()  != null && getOverlaid() .isMouseOver(mouse)) {
-            return getOverlaid();
+        CWidget overlaid = getOverlaid();
+        if (overlaid  != null && overlaid.isMouseOver(mouse)) {
+           CWidget inner = overlaid.hoveredWidget(mouse, depth);
+            if (inner != null) {
+                return inner;
+            }
+            return overlaid;
         }
         return super.hoveredWidget(mouse, depth);
     }
