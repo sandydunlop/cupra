@@ -3,11 +3,13 @@ package io.github.sandydunlop.cupra.common.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.sandydunlop.cupra.common.CupraException;
 import io.github.sandydunlop.cupra.common.events.CListBoxSelectionChangedEvent;
 import io.github.sandydunlop.cupra.common.events.CListBoxSelectionChangedListener;
 import io.github.sandydunlop.cupra.common.events.CMouseEvent;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFont;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFontFactory;
+import io.github.sandydunlop.cupra.common.render.BaseRenderer;
 
 
 public class CListBox extends CScrollableContainer {
@@ -175,9 +177,6 @@ public class CListBox extends CScrollableContainer {
         item.setParent(content);
         item.setListBox(this);
         content.contents().add(item);
-        // if (content.contents().size() == 1) {
-        //     this.setSelected(item);
-        // }
         setContentHeight(content.contents().size() * item.getHeight());
     }
 
@@ -206,9 +205,6 @@ public class CListBox extends CScrollableContainer {
             CWidget widget = content.contents().get(i);
             widget.setY(i * item.getHeight());
         }
-        // if (content.contents().size() == 1) {
-        //     this.setSelected(item);
-        // }
         setContentHeight(content.contents().size() * item.getHeight());
     }   
 
@@ -285,6 +281,18 @@ public class CListBox extends CScrollableContainer {
             double sa = getScrollAmount(); // This puts content at the correct position
             setScrollAmount(sa);
             super.layout();
+        }
+    }
+
+
+    @Override
+    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) throws CupraException {
+        super.render(renderer, mouseX, mouseY, delta);
+        if (visible) {
+            int renderWidth = getWidth();
+            int renderHeight = getHeight();
+            int borderColor = CWidget.getPalette().SELECTED_BACKGROUND;
+            renderer.drawRectangle(getCalculatedX(), getCalculatedY(), getCalculatedX() + renderWidth, getCalculatedY() + renderHeight, borderColor);
         }
     }
 

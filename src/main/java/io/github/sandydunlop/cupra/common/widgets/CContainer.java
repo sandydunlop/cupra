@@ -222,7 +222,7 @@ public class CContainer extends CWidget {
 			if (widget.isExpandable()) {
 				expandableWidgets.add(widget);
 			} else {
-				if (widget instanceof CContainer) {
+				if (widget.getClass() == CContainer.class) {
 					widget.setWidth(width  - padding*2);
 				} else  if (widget.getWidth() == 0) {
 					widget.setWidth(widget.getCalculatedWidth());
@@ -282,7 +282,7 @@ public class CContainer extends CWidget {
 				if (widget instanceof CContainer) {
 					widget.setWidth(w);
 				}
-				if (widget instanceof CContainer) {
+				if (widget.getClass() == CContainer.class) {
 					widget.setHeight(height - (padding*2));
 				} else  if (widget.getHeight() == 0) {
 					widget.setHeight(widget.getCalculatedHeight());
