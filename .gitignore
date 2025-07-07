@@ -5,3 +5,6 @@
 /cupra/.settings
 cupra.code-workspace
 
+codeql-custom-queries-java/codeql-pack.lock.yml
+codeql-custom-queries-java/codeql-pack.yml
+codeql-custom-queries-java/example.ql
