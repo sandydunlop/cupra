@@ -75,7 +75,7 @@ public abstract class CAbstractScrollable extends CWidget {
 
 
     protected double getMaxScroll() {
-        return Math.max(0, getMax() - getHeight());
+        return Math.max(0, getMax() - (orientation == Orientation.HORIZONTAL ? getWidth() : getHeight()));
     }
 
 

@@ -185,9 +185,11 @@ public class CListBox extends CScrollableContainer {
         content.contents().add(item);
         setContentHeight(content.contents().size() * item.getHeight());
 
-        item.recalculateSize();
-        if (item.getWidth() > getContentWidth()) {
-            setContentWidth(item.getWidth());
+        if (horizontalScrollingEnabled) {
+            item.recalculateSize();
+            if (item.getWidth() > getContentWidth()) {
+                setContentWidth(item.getWidth());
+            }
         }
     }
 
@@ -220,9 +222,12 @@ public class CListBox extends CScrollableContainer {
             CWidget widget = content.contents().get(i);
             widget.setY(i * item.getHeight());
         }
-        item.recalculateSize();
-        if (item.getWidth() > getContentWidth()) {
-            setContentWidth(item.getWidth());
+        setContentHeight(content.contents().size() * item.getHeight());
+        if (horizontalScrollingEnabled) {
+            item.recalculateSize();
+            if (item.getWidth() > getContentWidth()) {
+                setContentWidth(item.getWidth());
+            }
         }
     }   
 
