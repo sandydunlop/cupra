@@ -192,17 +192,13 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
             renderer = new AwtRenderer(g2d);
             renderer.setFont(fontOptions);
         }
-        try {
-            if (widget != null) {
-                widget.render(renderer, mouseX, mouseY, delta);
-            }else if (screen != null){
-                if (!screen.isInitialized()){
-                    screen.init();
-                }
-                screen.render(renderer, mouseX, mouseY, delta);
+        if (widget != null) {
+            widget.render(renderer, mouseX, mouseY, delta);
+        }else if (screen != null){
+            if (!screen.isInitialized()){
+                screen.init();
             }
-        } catch (CupraException e) {
-            e.printStackTrace();
+            screen.render(renderer, mouseX, mouseY, delta);
         }
         if (designMode) {
             drawRulers();

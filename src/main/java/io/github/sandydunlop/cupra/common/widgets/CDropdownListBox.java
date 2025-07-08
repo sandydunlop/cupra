@@ -235,10 +235,9 @@ public class CDropdownListBox extends CWidget {
      * @param mouseX the current X position of the mouse cursor
      * @param mouseY the current Y position of the mouse cursor
      * @param delta the time elapsed since the last frame, in seconds
-     * @throws CupraException if an error occurs during rendering
      */
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) throws CupraException {
+    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
         super.render(renderer, mouseX, mouseY, delta);
         positionChildren();
         textbox.render(renderer, mouseX, mouseY, delta);

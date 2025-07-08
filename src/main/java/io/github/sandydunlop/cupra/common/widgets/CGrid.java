@@ -70,7 +70,7 @@ public class CGrid extends CContainer {
 
 
     @Override
-	public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) throws CupraException {
+	public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
 		if (this.getDebug() != 0){
 			int renderWidth = getWidth()>0 ? getWidth() : 80;
 			int renderHeight = getHeight()>0 ? getHeight() : 20;

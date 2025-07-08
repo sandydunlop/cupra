@@ -247,7 +247,7 @@ public class CupraScreen extends CContainer {
 
     
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) throws CupraException {
+    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
         super.render(renderer, mouseX, mouseY, delta);
         if (overlaidWidget != null){
             overlaidWidget.render(renderer, mouseX, mouseY, delta);

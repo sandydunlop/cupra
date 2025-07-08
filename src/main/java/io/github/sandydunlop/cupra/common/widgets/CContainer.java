@@ -328,7 +328,7 @@ public class CContainer extends CWidget {
 
 
 	@Override
-	public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) throws CupraException {
+	public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
         if (this.isVisible()) {
 			int renderWidth = getWidth()>0 ? getWidth() - (padding*2): 80;
 			int renderHeight = getHeight()>0 ? getHeight() - (padding*2): 20;

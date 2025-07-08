@@ -193,7 +193,7 @@ public class CNumberBox extends CWidget{
 
 
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) throws CupraException {
+    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
         super.render(renderer, mouseX, mouseY, delta);
         positionChildren();
         textbox.render(renderer, mouseX, mouseY, delta);
