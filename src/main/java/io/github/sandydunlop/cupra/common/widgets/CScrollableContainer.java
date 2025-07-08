@@ -1,6 +1,5 @@
 package io.github.sandydunlop.cupra.common.widgets;
 
-import io.github.sandydunlop.cupra.common.CupraException;
 import io.github.sandydunlop.cupra.common.events.CMouseEvent;
 import io.github.sandydunlop.cupra.common.render.BaseRenderer;
 import io.github.sandydunlop.cupra.common.util.Math;
@@ -83,9 +82,16 @@ public class CScrollableContainer extends CContainer {
     //
 
 
+    protected int verticalScrollBarWidthUsed() {
+        if (!horizontalScrollingEnabled) return 0;
+        if (verticalScrollBar.getMaxScroll() == 0) return 0;
+        return verticalScrollBar.getWidth();
+    }
+
+
     protected int horizontalScrollBarHeightUsed() {
         if (!horizontalScrollingEnabled) return 0;
-        // TODO: Hide if not required?
+        if (horizontalScrollBar.getMaxScroll() == 0) return 0;
         return horizontalScrollBar.getHeight();
     }
 
@@ -109,14 +115,13 @@ public class CScrollableContainer extends CContainer {
     @Override
     public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
         if (this.isVisible()) {
-            if (this.hasBackground) {
+            if (containerHasBackground) {
                 int renderWidth = getWidth();
                 int renderHeight = getHeight();
-                renderer.fill(getCalculatedX(), getCalculatedY(), getCalculatedX() + renderWidth, getCalculatedY() + renderHeight, backgroundColor);
+                renderer.fill(getCalculatedX(), getCalculatedY(), getCalculatedX() + renderWidth, getCalculatedY() + renderHeight, containerBackgroundColor);
             }
-            int contentWidth = this.getWidth();
-            if (this.content != null) {
-                renderer.enableClipping(this.getCalculatedX(), this.getCalculatedY(), this.getCalculatedX() + contentWidth, this.getCalculatedY() + this.getHeight());
+            if (content != null) {
+                renderer.enableClipping(getCalculatedX(), getCalculatedY(), getCalculatedX() + getWidth(), getCalculatedY() + getHeight());
                 content.render(renderer, mouseX, mouseY, delta);
                 verticalScrollBar.render(renderer, mouseX, mouseY, delta);
                 if (horizontalScrollingEnabled) {
@@ -174,9 +179,7 @@ public class CScrollableContainer extends CContainer {
     @Override
     public boolean mouseScrolled(CMouseEvent mouse) {
         this.setVerticalScrollAmount(this.getVerticalScrollAmount() + mouse.getVerticalAmount() * 0.05 * this.getContentHeight() / 2.0);
-
         this.setHorizontalScrollAmount(this.getHorizontalScrollAmount() + mouse.getHorizontalAmount() * 0.05 * this.getContentWidth() / 2.0);
-        
         verticalScrollBar.setScrollAmount(verticalScrollAmount);
         horizontalScrollBar.setScrollAmount(horizontalScrollAmount);
         return true;

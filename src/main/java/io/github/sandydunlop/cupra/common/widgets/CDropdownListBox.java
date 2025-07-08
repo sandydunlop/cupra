@@ -1,6 +1,5 @@
 package io.github.sandydunlop.cupra.common.widgets;
 
-import io.github.sandydunlop.cupra.common.CupraException;
 import io.github.sandydunlop.cupra.common.events.CMouseEvent;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFont;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFontFactory;
@@ -53,7 +52,6 @@ public class CDropdownListBox extends CWidget {
         if (parent != null) {
             parent.add(this);
         }
-
         textbox = new CTextBox(null, "");
         textbox.onMouseClicked(action -> {
             toggleListVisibility();
@@ -62,8 +60,9 @@ public class CDropdownListBox extends CWidget {
         button = new CSymbolButton(null, Symbol.DOWN, click ->{
             toggleListVisibility();
         });
-        listbox = new CListBox(null, selection ->{
-            textbox.setText(selection.getTitle());
+        listbox = new CListBox(null);
+        listbox.onClick(selection ->{
+            textbox.setText(selection.getText());
             listbox.setVisible(false);
             PlatformServices.getInstance().setOverlaid(null, null);
             if (this.onSelectionChanged != null) {
@@ -82,9 +81,11 @@ public class CDropdownListBox extends CWidget {
             PlatformServices.getInstance().setOverlaid(null, null);
         } else {
             setListboxParams();
+            listbox.scrollTo(listbox.getSelected());
             listbox.setVisible(true);
             PlatformServices.getInstance().setOverlaid(listbox, this);
         }
+        PlatformServices.getInstance().render();
     }
     /**
      * Sets the width of the dropdown text box component.
@@ -184,7 +185,6 @@ public class CDropdownListBox extends CWidget {
         // Listbox coordinates are absolute
         this.listbox.setHeight(listboxHeight());
         this.listbox.setWidth(this.width);
-        this.listbox.setVerticalScrollAmount(0.0);
     }
 
 
@@ -197,7 +197,7 @@ public class CDropdownListBox extends CWidget {
      */
     private int listboxHeight() {
         int entriesDisplayed = listbox.content.contents.size() > 4 ? 4 : listbox.content.contents.size();
-        return (listbox.getItemHeight() * entriesDisplayed) + 2;
+        return (listbox.getItemHeight() * entriesDisplayed);
     }
 
 

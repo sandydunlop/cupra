@@ -13,7 +13,6 @@ import io.github.sandydunlop.cupra.platform.PlatformServices;
 public class CupraScreen extends CContainer {
     private boolean isInitialized;
     private boolean hasCompletedMain = false;
-    private int displayPadding;
     private CWidget focusedWidget = null;
     protected CWidget overlaidWidget = null;
     protected CWidget overlaidParent = null;
@@ -25,8 +24,8 @@ public class CupraScreen extends CContainer {
 
 
     protected CupraScreen(){
+        super();
         this.isInitialized = false;
-        this.displayPadding = 10;
         FontSpec font = new FontSpec();
         font.setName("Rubik");
         font.setColor(CWidget.getPalette().REGULAR_TEXT);
@@ -110,15 +109,6 @@ public class CupraScreen extends CContainer {
 
     public void setHasCompletedMain(boolean hasCompletedMain) {
         this.hasCompletedMain = hasCompletedMain;
-    }
-
-
-    public int getDisplayPadding(){
-        return displayPadding;
-    }
-
-    public void setDisplayPadding(int padding){
-        displayPadding = padding;
     }
 
 

@@ -15,10 +15,10 @@ public class CContainer extends CWidget {
     private boolean isHorizontal = false;
 	private Align.Horizontal alignHorizontal = Align.Horizontal.LEFT;
 	private Align.Vertical alignVertical = Align.Vertical.TOP;
-	protected boolean hasBackground = false;
-	protected int backgroundColor = CWidget.getPalette().REGULAR_BACKGROUND;
-	protected boolean hasBorder = false;
-	protected int borderColor = CWidget.getPalette().HOVERED_BORDER;
+	protected boolean containerHasBackground = false;
+	protected int containerBackgroundColor = CWidget.getPalette().REGULAR_BACKGROUND;
+	protected boolean containerHasBorder = false;
+	protected int containerBorderColor = CWidget.getPalette().HOVERED_BORDER;
 
 
     public CContainer(CContainer parent, boolean isHorizontal) {
@@ -95,14 +95,14 @@ public class CContainer extends CWidget {
 
 
 	public void setBackgroundColor(int color) {
-		this.backgroundColor = color;
-		this.hasBackground = true;
+		this.containerBackgroundColor = color;
+		this.containerHasBackground = true;
 	}
 
 
 	public void setBorderColor(int color) {
-		this.borderColor = color;
-		this.hasBorder = true;
+		this.containerBorderColor = color;
+		this.containerHasBorder = true;
 	}
 
 
@@ -332,8 +332,8 @@ public class CContainer extends CWidget {
         if (this.isVisible()) {
 			int renderWidth = getWidth()>0 ? getWidth() - (padding*2): 80;
 			int renderHeight = getHeight()>0 ? getHeight() - (padding*2): 20;
-			if (this.hasBackground) {
-				renderer.fill(getCalculatedX(), getCalculatedY(), getCalculatedX() + renderWidth, getCalculatedY() + renderHeight, backgroundColor);
+			if (this.containerHasBackground) {
+				renderer.fill(getCalculatedX(), getCalculatedY(), getCalculatedX() + renderWidth, getCalculatedY() + renderHeight, containerBackgroundColor);
 			}
 			for (int i = 0; i < contents.size(); i++) {
 				CWidget widget = contents.get(i);
@@ -345,8 +345,8 @@ public class CContainer extends CWidget {
 					widget.render(renderer, mouseX, mouseY, delta);
 				}
 			}
-			if (this.hasBorder) {
-				renderer.drawRectangle(getCalculatedX(), getCalculatedY(), getCalculatedX() + renderWidth, getCalculatedY() + renderHeight, borderColor);
+			if (this.containerHasBorder) {
+				renderer.drawRectangle(getCalculatedX(), getCalculatedY(), getCalculatedX() + renderWidth, getCalculatedY() + renderHeight, containerBorderColor);
 			}
 		}
 		if (this.getDebug() != 0){

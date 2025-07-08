@@ -3,7 +3,6 @@ package io.github.sandydunlop.cupra.common.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.github.sandydunlop.cupra.common.CupraException;
 import io.github.sandydunlop.cupra.common.events.CListBoxSelectionChangedEvent;
 import io.github.sandydunlop.cupra.common.events.CListBoxSelectionChangedListener;
 import io.github.sandydunlop.cupra.common.events.CMouseEvent;
@@ -14,9 +13,16 @@ import io.github.sandydunlop.cupra.common.render.BaseRenderer;
 
 public class CListBox extends CScrollableContainer {
 	private List<CListBoxSelectionChangedListener> listeners = new ArrayList<>();
-    private CSelectionChangedAction onSelectionChanged;
+    private SelectionChangedAction onSelectionChanged;
+    private ClickAction onClick;
     private CListBoxEntry selected = null;
 	private int itemHeight = 0;
+	protected boolean listHasBackground = true;
+	protected int listBackgroundColor = CWidget.getPalette().INPUT_BACKGROUND;
+	protected boolean listHasBorder = false;
+	protected int listBorderColor = CWidget.getPalette().HOVERED_BORDER;
+    private int renderX;
+    private int renderY;
 
 
     public CListBox(CContainer parent) {
@@ -24,44 +30,82 @@ public class CListBox extends CScrollableContainer {
     }
 
 
-    public CListBox(CContainer parent, CSelectionChangedAction onSelectionChanged) {
+    public CListBox(CContainer parent, SelectionChangedAction onSelectionChanged) {
 		super(parent);
         this.onSelectionChanged = onSelectionChanged;
         this.setExpandable(false);
         this.setFocusable(true);
         this.setMouseOverEffects(true);
-        this.setBackgroundColor(CWidget.getPalette().INPUT_BACKGROUND);
-        this.setBorderColor(CWidget.getPalette().HOVERED_BORDER);
         this.setPadding(0);
         content = new CContainer();
         content.setPadding(0);
     }
     
 
-    public interface CSelectionChangedAction {
+    public interface SelectionChangedAction {
         void onSelectionChanged(CListBoxEntry selection);
     }
 
 
+    public interface ClickAction {
+        void onClick(CListBoxEntry selection);
+    }
+
+
+    public void onClick(ClickAction action) {
+        this.onClick = action;
+    }
+
+
+    /*
+     * Sets the background color of the CListBox. This is rendered before the CListBox's container
+     * component, and hides the inherited setBackgroundColor method.
+     * @param [color] ARGB representation of the color.
+     */
+    @Override
+	public void setBackgroundColor(int color) {
+		listBackgroundColor = color;
+	}
+
+
+    /*
+     * Sets the border color of the CListBox. This is rendered after the CListBox's container
+     * component, and hides the inherited setBorderColor method.
+     * @param [color] ARGB representation of the color.
+     */
+    @Override
+	public void setBorderColor(int color) {
+		listBorderColor = color;
+	}
+
+
+    /*
+     * Specifies which entry within the listbox is selected.
+     * @param entry The entry to select
+     */
     public void setSelected(CListBoxEntry entry) {
-        if (this.selected != entry) {
-            if (this.selected != null) {
-                this.selected.setSelected(false);
+        if (selected != entry) {
+            if (selected != null) {
+                selected.setSelected(false);
             }
-            this.selected = entry;
-            if (this.selected != null) {
-                this.selected.setSelected(true);
-                scrollTo(this.selected);
+            selected = entry;
+            if (selected != null) {
+                selected.setSelected(true);
+                scrollTo(selected);
             }
             CListBoxSelectionChangedEvent event = new CListBoxSelectionChangedEvent(this);
             fireListBoxSelectionChangedEvent(event);
-            if (this.onSelectionChanged != null) {
-                this.onSelectionChanged.onSelectionChanged(entry);
+            if (onSelectionChanged != null) {
+                onSelectionChanged.onSelectionChanged(entry);
             }
         }
     }
 
 
+    /*
+     * Specifies which entry within the listbox is selected.
+     * @param index The index of the entry to select
+     */
     public void setSelectedIndex(int index) {
         if (index < 0 || index >= content.contents().size()) {
             return;
@@ -71,6 +115,10 @@ public class CListBox extends CScrollableContainer {
     }   
 
 
+    /*
+     * Retrieves the seleted entry.
+     * @return The selected entry
+     */
     public CListBoxEntry getSelected() {
         return this.selected;
     }
@@ -176,9 +224,10 @@ public class CListBox extends CScrollableContainer {
         }
         item.setY(content.contents().size() * item.getHeight());
 
-        if (!horizontalScrollingEnabled) {
-            item.setWidth(this.width - verticalScrollBar.getWidth());
-        }
+        // TODO: Remove this?
+        // if (!horizontalScrollingEnabled) {
+        //     item.setWidth(this.width - verticalScrollBar.getWidth());
+        // }
 
         item.setParent(content);
         item.setListBox(this);
@@ -187,9 +236,9 @@ public class CListBox extends CScrollableContainer {
 
         if (horizontalScrollingEnabled) {
             item.recalculateSize();
-            if (item.getWidth() > getContentWidth()) {
-                setContentWidth(item.getWidth());
-            }
+        }
+        if (item.getWidth() > getContentWidth()) {
+            setContentWidth(item.getWidth());
         }
     }
 
@@ -206,9 +255,10 @@ public class CListBox extends CScrollableContainer {
             item.font = this.font;
         }
 
-        if (!horizontalScrollingEnabled) {
-            item.setWidth(this.width - verticalScrollBar.getWidth());
-        }
+        // TODO: Remove this?
+        // if (!horizontalScrollingEnabled) {
+        //     item.setWidth(this.width - verticalScrollBar.getWidth());
+        // }
 
         item.setParent(content);
         item.setListBox(this);
@@ -225,9 +275,9 @@ public class CListBox extends CScrollableContainer {
         setContentHeight(content.contents().size() * item.getHeight());
         if (horizontalScrollingEnabled) {
             item.recalculateSize();
-            if (item.getWidth() > getContentWidth()) {
-                setContentWidth(item.getWidth());
-            }
+        }
+        if (item.getWidth() > getContentWidth()) {
+            setContentWidth(item.getWidth());
         }
     }   
 
@@ -258,9 +308,12 @@ public class CListBox extends CScrollableContainer {
     }
 
 
-    protected CListBoxEntry getEntryAtPosition(CMouseEvent mouse) {
-        CWidget w = internalHoveredWidget(mouse);
-        return (CListBoxEntry)w;
+    protected CListBoxEntry entryAtMousePointer(int mouseX, int mouseY) {
+        if (!isMouseOver(mouseX, mouseY)) return null;
+        int yWithinBox = mouseY - renderY;
+        int yWithinList = yWithinBox + (int)verticalScrollAmount;
+        int posWithinList = yWithinList / itemHeight;
+        return getEntry(posWithinList);
     }
 
 
@@ -283,6 +336,11 @@ public class CListBox extends CScrollableContainer {
         }
     }
 
+
+    //
+    // === Layout & Render ===
+    //
+
     
     @Override
     public void layout() {
@@ -294,15 +352,15 @@ public class CListBox extends CScrollableContainer {
             if (!horizontalScrollingEnabled) {
                 content.setWidth(getWidth() - verticalScrollBar.getWidth());
             }
-            int renderY = 0;
+            int componentY = 0;
             int widest = 0;
             for (CWidget widget : content.contents()) {
-                widget.setY(renderY);
+                widget.setY(componentY);
                 if (!horizontalScrollingEnabled) {
                     widget.setWidth(this.width - verticalScrollBar.getWidth());
                 }
                 widget.setHeight(itemHeight);
-                renderY += widget.getHeight();
+                componentY += widget.getHeight();
                 if (widget.getWidth() > widest) {
                     widest = widget.getWidth();
                 }
@@ -322,30 +380,87 @@ public class CListBox extends CScrollableContainer {
     public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
         super.render(renderer, mouseX, mouseY, delta);
         if (visible) {
-            int renderWidth = getWidth();
-            int renderHeight = getHeight();
-            int borderColor = CWidget.getPalette().SELECTED_BACKGROUND;
-            renderer.drawRectangle(getCalculatedX(), getCalculatedY(), getCalculatedX() + renderWidth, getCalculatedY() + renderHeight, borderColor);
+            renderX = getCalculatedX();
+            renderY = getCalculatedY();
+            renderer.enableClipping(renderX, renderY, renderX + width, renderY + height);
+            renderBackground(renderer);
+            renderSelection(renderer);
+            CListBoxEntry hoveredWidget = entryAtMousePointer(mouseX, mouseY);
+            if (hoveredWidget != null) {
+                int componentWidth = componentVisibleWidth();
+                int componentHeight = hoveredWidget.getHeight();
+                int componentY = hoveredWidget.getCalculatedY();
+                renderer.fill(renderX + 1, componentY, 
+                        renderX + componentWidth, componentY + componentHeight - 1, 
+                        CWidget.getPalette().HOVERED_BACKGROUND);
+                renderer.drawRectangle(renderX + 1, componentY, 
+                        renderX + componentWidth, componentY + componentHeight - 1, 
+                        CWidget.getPalette().HOVERED_BORDER);
+            }
+            super.render(renderer, mouseX, mouseY, delta);
+            renderer.drawRectangle(getCalculatedX(), getCalculatedY(), 
+                    getCalculatedX() + getWidth(), getCalculatedY() + getHeight(), 
+                    CWidget.getPalette().SELECTED_BACKGROUND);
+            renderer.disableClipping();
         }
+    }
+
+
+    private void renderBackground(BaseRenderer renderer) {
+        if (this.listHasBackground) {
+            int componentWidth = getWidth();
+            int componentHeight = getHeight();
+            renderer.fill(renderX, getCalculatedY(), 
+                    renderX + componentWidth, renderY + componentHeight, 
+                    listBackgroundColor);
+        }
+    }
+
+
+    private void renderSelection(BaseRenderer renderer) {
+        if (selected != null) {
+            int componentWidth = componentVisibleWidth();
+            int componentHeight = selected.getHeight() + 1;
+            int componentY = renderY + selected.getY() - 1 - (int)getVerticalScrollAmount();
+            renderer.fill(renderX, componentY, 
+                    renderX + componentWidth, componentY + componentHeight, 
+                    CWidget.getPalette().SELECTED_BACKGROUND);
+        }
+    }
+
+
+    public int componentVisibleWidth() {
+        return getWidth() - verticalScrollBarWidthUsed();
     }
 
 
     // === Mouse ===
 
 
+    private boolean isMouseOver(int mouseX, int mouseY) {
+        return (this.visible && 
+                mouseX >= this.getCalculatedX() && 
+                mouseY >= this.getCalculatedY() && 
+                mouseX < (this.getCalculatedX() + this.getWidth()) && 
+                mouseY < (this.getCalculatedY() + this.getHeight()));
+    }
+
+
     @Override
     public boolean mousePressed(CMouseEvent mouse) {
         super.mousePressed(mouse);
-        if (!this.isMouseOver(mouse)) return false;
-
-        if (mouse.getX() <= content.getWidth()) {
-            CListBoxEntry entry = this.getEntryAtPosition(mouse);
+        if (!isMouseOver(mouse)) return false;
+        if (mouse.getX() <= getWidth() - verticalScrollBarWidthUsed()) {
+            CListBoxEntry entry = entryAtMousePointer((int)mouse.getX(), (int)mouse.getY());
             if (entry != null) {
                 setSelected(entry);
-                return true;
             }
+            if (this.onClick != null) {
+                this.onClick.onClick(entry);
+            }
+            return true;
         }
-        return this.scrolling;
+        return false;
     }
 
 
