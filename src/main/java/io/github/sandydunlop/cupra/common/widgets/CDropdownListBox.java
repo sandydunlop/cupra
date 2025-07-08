@@ -72,6 +72,7 @@ public class CDropdownListBox extends CWidget {
         });
         listbox.setVisible(false);
         listbox.setFont(font.duplicate());
+        listbox.setHorizontalScrollingEnabled(false);
     }
 
 
@@ -183,7 +184,7 @@ public class CDropdownListBox extends CWidget {
         // Listbox coordinates are absolute
         this.listbox.setHeight(listboxHeight());
         this.listbox.setWidth(this.width);
-        this.listbox.setScrollAmount(0.0);
+        this.listbox.setVerticalScrollAmount(0.0);
     }
 
 

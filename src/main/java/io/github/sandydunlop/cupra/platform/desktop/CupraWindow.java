@@ -194,7 +194,6 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
         }
         try {
             if (widget != null) {
-                System.out.println("Rendering individual widget: " + widget.getClass().getSimpleName());
                 widget.render(renderer, mouseX, mouseY, delta);
             }else if (screen != null){
                 if (!screen.isInitialized()){
@@ -260,9 +259,13 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
                 .setClickCount(e.getClickCount())
                 .setModifiers(e.getModifiersEx());
         if (e instanceof MouseWheelEvent wheel) {
-            double scrollAmount = PlatformServices.getInstance().getInvertMouseScrolling() ? 
-                    -wheel.getPreciseWheelRotation() : wheel.getPreciseWheelRotation();
-            event.setVerticalAmount(scrollAmount);
+            if (event.isShiftPressed()) {
+                event.setHorizontalAmount(wheel.getPreciseWheelRotation());
+            } else {
+                double scrollAmount = PlatformServices.getInstance().getInvertMouseScrolling() ? 
+                        -wheel.getPreciseWheelRotation() : wheel.getPreciseWheelRotation();
+                event.setVerticalAmount(scrollAmount);
+            }
         }
         return event;
     }

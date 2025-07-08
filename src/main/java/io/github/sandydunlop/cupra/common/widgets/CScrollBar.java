@@ -6,6 +6,7 @@ import io.github.sandydunlop.cupra.platform.PlatformServices;
 
 
 public class CScrollBar extends CAbstractScrollable {
+    protected static final int DEFAULT_THICKNESS = 8;
     protected boolean showButtons = false;
 
 
@@ -19,7 +20,7 @@ public class CScrollBar extends CAbstractScrollable {
         if (parent != null) {
             parent.add(this);
         }
-        this.defaultThickness = 6;
+        this.defaultThickness = DEFAULT_THICKNESS;
         this.orientation = orientation;
         this.width = getDefaultWidth();
         this.height = getDefaultHeight();
