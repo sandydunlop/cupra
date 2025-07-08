@@ -67,8 +67,16 @@ public class CListBoxEntry extends CWidget {
 
 	@Override
     public void recalculateSize() {
-		BitmapFont bmf = BitmapFontFactory.load(font);
-		this.height = bmf.getHeight() + 1;
+		// BitmapFont bmf = BitmapFontFactory.load(font);
+		// this.height = bmf.getHeight() + 1;
+		if (value == null) {
+			BitmapFont bmf = BitmapFontFactory.load(font);
+			height = bmf.getHeight() + 1;
+			width = bmf.stringWidth(title);
+		} else {
+			// TODO: Make this work
+			
+		}
     }
 
 

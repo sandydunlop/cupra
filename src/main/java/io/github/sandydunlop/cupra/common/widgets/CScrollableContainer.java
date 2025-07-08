@@ -14,47 +14,67 @@ public class CScrollableContainer extends CContainer {
     protected CScrollBar verticalScrollBar = null;
     protected CScrollBar horizontalScrollBar = null;
     private int contentHeight = 0;
-    protected double scrollAmount = 0;
+    private int contentWidth = 0;
+    protected double verticalScrollAmount = 0;
+    protected double horizontalScrollAmount = 0;
     protected boolean scrolling = false;
+    protected boolean horizontalScrollingEnabled = true;
 
 
     public CScrollableContainer(CContainer parent){
         super(parent);
         verticalScrollBar = new CScrollBar(null, Orientation.VERTICAL);
-        verticalScrollBar.onPositionChanged(newScrollAmount -> {
-            setScrollAmount(newScrollAmount);
-            getScrollAmount();
+        verticalScrollBar.onPositionChanged(newVerticalScrollAmount -> {
+            setVerticalScrollAmount(newVerticalScrollAmount);
+            getVerticalScrollAmount();
         });
+        horizontalScrollBar = new CScrollBar(null, Orientation.HORIZONTAL);
+        horizontalScrollBar.onPositionChanged(newHorizontalScrollAmount -> {
+            setHorizontalScrollAmount(newHorizontalScrollAmount);
+            getHorizontalScrollAmount();
+        });
+    }
+
+
+    public void setHorizontalScrollingEnabled(boolean enabled) {
+        horizontalScrollingEnabled = enabled;
+    }
+
+
+    public boolean getHorizontalScrollingEnabled() {
+        return horizontalScrollingEnabled;
     }
 
 
     @Override
     public void setX(int x) {
         super.setX(x);
-        verticalScrollBar.setX(x + width - verticalScrollBar.getWidth());
+        verticalScrollBar.setX(getCalculatedX() + width - verticalScrollBar.getWidth());
+        horizontalScrollBar.setX(getCalculatedX());
     }
 
 
     @Override
     public void setY(int y) {
         super.setY(y);
-        verticalScrollBar.setY(y);
+        verticalScrollBar.setY(getCalculatedY());
+        horizontalScrollBar.setY(getCalculatedY() + height - horizontalScrollBar.getHeight());
     }
 
 
     @Override
     public void setWidth(int width) {
         super.setWidth(width);
-        verticalScrollBar.setX(x + width - verticalScrollBar.getWidth());
+        verticalScrollBar.setX(getCalculatedX() + width - verticalScrollBar.getWidth());
+        horizontalScrollBar.setWidth(width);
     }
 
 
     @Override
     public void setHeight(int height) {
         super.setHeight(height);
-        if (horizontalScrollBar != null) {
-            horizontalScrollBar.setY(y + height - verticalScrollBar.getHeight());
-        }
+        verticalScrollBar.setHeight(height);
+        horizontalScrollBar.setY(getCalculatedY() + height - verticalScrollBar.getHeight());
     }
 
 
@@ -63,14 +83,26 @@ public class CScrollableContainer extends CContainer {
     //
 
 
+    protected int horizontalScrollBarHeightUsed() {
+        if (!horizontalScrollingEnabled) return 0;
+        // TODO: Hide if not required?
+        return horizontalScrollBar.getHeight();
+    }
+
+
     @Override
     public void layout() {
         verticalScrollBar.setX(getCalculatedX() + width - verticalScrollBar.getWidth());
         verticalScrollBar.setY(getCalculatedY());
-        verticalScrollBar.setHeight(getHeight());
+        verticalScrollBar.setHeight(height);
         verticalScrollBar.setMax(Math.max(0, getContentHeight()));
-        verticalScrollBar.setScrollAmount(getScrollAmount());
-        //TODO: horizontal scrollbar
+        verticalScrollBar.setScrollAmount(getVerticalScrollAmount());
+
+        horizontalScrollBar.setX(getCalculatedX());
+        horizontalScrollBar.setY(getCalculatedY() + height - horizontalScrollBar.getHeight());
+        horizontalScrollBar.setWidth(width);
+        horizontalScrollBar.setMax(Math.max(0, getContentWidth()));
+        horizontalScrollBar.setScrollAmount(getHorizontalScrollAmount());
     }
 
 
@@ -87,6 +119,9 @@ public class CScrollableContainer extends CContainer {
                 renderer.enableClipping(this.getCalculatedX(), this.getCalculatedY(), this.getCalculatedX() + contentWidth, this.getCalculatedY() + this.getHeight());
                 content.render(renderer, mouseX, mouseY, delta);
                 verticalScrollBar.render(renderer, mouseX, mouseY, delta);
+                if (horizontalScrollingEnabled) {
+                    horizontalScrollBar.render(renderer, mouseX, mouseY, delta);
+                }
                 renderer.disableClipping();
             }
         }
@@ -138,10 +173,12 @@ public class CScrollableContainer extends CContainer {
 
     @Override
     public boolean mouseScrolled(CMouseEvent mouse) {
-        this.setScrollAmount(this.getScrollAmount() + mouse.getVerticalAmount() * 0.05 * this.getContentHeight() / 2.0);
-        if (verticalScrollBar != null) {
-            verticalScrollBar.setScrollAmount(scrollAmount);
-        }
+        this.setVerticalScrollAmount(this.getVerticalScrollAmount() + mouse.getVerticalAmount() * 0.05 * this.getContentHeight() / 2.0);
+
+        this.setHorizontalScrollAmount(this.getHorizontalScrollAmount() + mouse.getHorizontalAmount() * 0.05 * this.getContentWidth() / 2.0);
+        
+        verticalScrollBar.setScrollAmount(verticalScrollAmount);
+        horizontalScrollBar.setScrollAmount(horizontalScrollAmount);
         return true;
     }
 
@@ -168,6 +205,23 @@ public class CScrollableContainer extends CContainer {
     }
 
 
+    // This should be called for web page type widgets but not list boxes etc
+    protected synchronized void calculateWidth() {
+        if (this.content != null){
+            if (contentWidth == 0) {
+                int widest = 0;
+                for (CWidget widget : content.contents()) {
+                    if (widget.getX() + widget.getWidth() > widest) {
+                        widest = widget.getX() + widget.getWidth() ;
+                    }
+                }
+                contentWidth = widest;
+            }
+            content.setWidth(contentWidth);
+        }
+    }
+
+
     // This should be called for listbox type widgets, but not web pages etc
     public synchronized void setContentHeight(int height) {
         contentHeight = height;
@@ -178,45 +232,83 @@ public class CScrollableContainer extends CContainer {
     }
 
 
+    // This should be called for listbox type widgets, but not web pages etc
+    public synchronized void setContentWidth(int width) {
+        contentWidth = width;
+        if (content != null) {
+            content.setWidth(width);
+            horizontalScrollBar.setMax(Math.max(0, getContentWidth()));
+        }
+    }
+
+
     public synchronized int getContentHeight() {
         return contentHeight;
     }
 
 
-    public int getMaxScroll() {
-        int mp = this.getMaxPosition();
+    public synchronized int getContentWidth() {
+        return contentWidth;
+    }
+
+
+    public int getVerticalMaxScroll() {
+        int mp = this.getVerticalMaxPosition();
         return Math.max(0, mp - (this.getHeight()));
     }
 
 
-    protected int getMaxPosition() {
+    public int getHorizontalMaxScroll() {
+        int mp = this.getHorizontalMaxPosition();
+        return Math.max(0, mp - (this.getWidth()));
+    }
+
+
+    protected int getVerticalMaxPosition() {
         return this.getContentHeight();
     }
 
 
+    protected int getHorizontalMaxPosition() {
+        return this.getContentWidth();
+    }
+
+
     public synchronized void scrollTo(CWidget widget){
-        getScrollAmount();
+        getVerticalScrollAmount();
         if (widget != null) {
-            if (widget.getY() - this.scrollAmount < 0) {
-                this.scrollAmount = Math.max(0, widget.getY());
-            } else if (widget.getY() + widget.getHeight() - this.scrollAmount > this.getHeight()) {
-                this.scrollAmount = Math.min(getMaxScroll(), widget.getY() + widget.getHeight() - this.getHeight());
+            if (widget.getY() - this.verticalScrollAmount < 0) {
+                this.verticalScrollAmount = Math.max(0, widget.getY());
+            } else if (widget.getY() + widget.getHeight() - this.verticalScrollAmount > this.getHeight()) {
+                this.verticalScrollAmount = Math.min(getVerticalMaxScroll(), widget.getY() + widget.getHeight() - this.getHeight());
             }
         }
         PlatformServices.getInstance().render(this);
     }
     
 
-    public double getScrollAmount() {
+    public double getVerticalScrollAmount() {
         if (content != null) {
-            content.setY((int)(this.getCalculatedY() - this.scrollAmount));
-            content.setX(this.getCalculatedX());
+            content.setY((int)(getCalculatedY() - verticalScrollAmount));
         }
-    	return this.scrollAmount;
+    	return verticalScrollAmount;
     }
 
 
-    public void setScrollAmount(double amount) {
-    	this.scrollAmount = Math.clamp(amount, 0.0, this.getMaxScroll());
+    public void setVerticalScrollAmount(double amount) {
+    	this.verticalScrollAmount = Math.clamp(amount, 0.0, getVerticalMaxScroll());
+    }
+
+
+    public double getHorizontalScrollAmount() {
+        if (content != null) {
+            content.setX((int)(getCalculatedX() - horizontalScrollAmount));
+        }
+    	return horizontalScrollAmount;
+    }
+
+
+    public void setHorizontalScrollAmount(double amount) {
+    	this.horizontalScrollAmount = Math.clamp(amount, 0.0, getHorizontalMaxScroll());
     }
 }

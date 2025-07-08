@@ -14,9 +14,9 @@ import io.github.sandydunlop.cupra.common.render.BaseRenderer;
 
 public class CListBox extends CScrollableContainer {
 	private List<CListBoxSelectionChangedListener> listeners = new ArrayList<>();
-	private int itemHeight = 0;
-    private CListBoxEntry selected = null;
     private CSelectionChangedAction onSelectionChanged;
+    private CListBoxEntry selected = null;
+	private int itemHeight = 0;
 
 
     public CListBox(CContainer parent) {
@@ -123,14 +123,12 @@ public class CListBox extends CScrollableContainer {
     @Override
     public void setWidth(int width) {
         super.setWidth(width);
-        getScrollAmount();
-        if (content == null) {
-            return;
-        }
-
-        content.setWidth(width - verticalScrollBar.getWidth());
-        for (CWidget widget : content.contents()) {
-            widget.setWidth(width - verticalScrollBar.getWidth());
+        getVerticalScrollAmount();
+        if (content != null && !horizontalScrollingEnabled) {
+            content.setWidth(width - verticalScrollBar.getWidth());
+            for (CWidget widget : content.contents()) {
+                widget.setWidth(width - verticalScrollBar.getWidth());
+            }
         }
         super.layout();
     }
@@ -139,6 +137,10 @@ public class CListBox extends CScrollableContainer {
     @Override
     public void setHeight(int height) {
         super.setHeight(height);
+        getHorizontalScrollAmount();
+        if (content != null) {
+            content.setHeight(height - horizontalScrollBarHeightUsed());
+        }
         super.layout();
     }
 
@@ -173,11 +175,20 @@ public class CListBox extends CScrollableContainer {
             item.font = this.font;
         }
         item.setY(content.contents().size() * item.getHeight());
-        item.setWidth(this.width - verticalScrollBar.getWidth());
+
+        if (!horizontalScrollingEnabled) {
+            item.setWidth(this.width - verticalScrollBar.getWidth());
+        }
+
         item.setParent(content);
         item.setListBox(this);
         content.contents().add(item);
         setContentHeight(content.contents().size() * item.getHeight());
+
+        item.recalculateSize();
+        if (item.getWidth() > getContentWidth()) {
+            setContentWidth(item.getWidth());
+        }
     }
 
 
@@ -192,7 +203,11 @@ public class CListBox extends CScrollableContainer {
         if (item.font == null) {
             item.font = this.font;
         }
-        item.setWidth(this.width - verticalScrollBar.getWidth());
+
+        if (!horizontalScrollingEnabled) {
+            item.setWidth(this.width - verticalScrollBar.getWidth());
+        }
+
         item.setParent(content);
         item.setListBox(this);
         
@@ -205,7 +220,10 @@ public class CListBox extends CScrollableContainer {
             CWidget widget = content.contents().get(i);
             widget.setY(i * item.getHeight());
         }
-        setContentHeight(content.contents().size() * item.getHeight());
+        item.recalculateSize();
+        if (item.getWidth() > getContentWidth()) {
+            setContentWidth(item.getWidth());
+        }
     }   
 
 
@@ -214,7 +232,6 @@ public class CListBox extends CScrollableContainer {
             item.layout();
             if (item.getHeight() == 0){
                 if (this.font != null) {
-                    // return font.getSize() + 4 + 1;
                     BitmapFont bmf = BitmapFontFactory.load(font);
                     return bmf.getHeight() + 1;
                 }else{
@@ -232,7 +249,7 @@ public class CListBox extends CScrollableContainer {
     @Override
     public void clear() {
         content.clear();
-        this.scrollAmount = 0.0;
+        this.verticalScrollAmount = 0.0;
     }
 
 
@@ -269,17 +286,28 @@ public class CListBox extends CScrollableContainer {
                 CWidget widget = content.contents().get(0);
                 itemHeight = widget.getCalculatedHeight();
             }
-            content.setWidth(getWidth() - verticalScrollBar.getWidth());
+            if (!horizontalScrollingEnabled) {
+                content.setWidth(getWidth() - verticalScrollBar.getWidth());
+            }
             int renderY = 0;
+            int widest = 0;
             for (CWidget widget : content.contents()) {
                 widget.setY(renderY);
-                widget.setWidth(this.width - verticalScrollBar.getWidth());
+                if (!horizontalScrollingEnabled) {
+                    widget.setWidth(this.width - verticalScrollBar.getWidth());
+                }
                 widget.setHeight(itemHeight);
                 renderY += widget.getHeight();
+                if (widget.getWidth() > widest) {
+                    widest = widget.getWidth();
+                }
             }
             setContentHeight(content.contents().size() * itemHeight);
-            double sa = getScrollAmount(); // This puts content at the correct position
-            setScrollAmount(sa);
+            if (horizontalScrollingEnabled) {
+                setContentWidth(widest);
+            }
+            double sa = getVerticalScrollAmount(); // This puts content at the correct position
+            setVerticalScrollAmount(sa);
             super.layout();
         }
     }
