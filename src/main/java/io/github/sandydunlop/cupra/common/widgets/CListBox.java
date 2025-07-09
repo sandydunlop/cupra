@@ -19,7 +19,7 @@ public class CListBox extends CScrollableContainer {
 	private int itemHeight = 0;
 	protected boolean listHasBackground = true;
 	protected int listBackgroundColor = CWidget.getPalette().INPUT_BACKGROUND;
-	protected boolean listHasBorder = false;
+	protected boolean listHasBorder = true;
 	protected int listBorderColor = CWidget.getPalette().HOVERED_BORDER;
     private int renderX;
     private int renderY;
@@ -223,12 +223,6 @@ public class CListBox extends CScrollableContainer {
             item.font = this.font;
         }
         item.setY(content.contents().size() * item.getHeight());
-
-        // TODO: Remove this?
-        // if (!horizontalScrollingEnabled) {
-        //     item.setWidth(this.width - verticalScrollBar.getWidth());
-        // }
-
         item.setParent(content);
         item.setListBox(this);
         content.contents().add(item);
@@ -254,15 +248,8 @@ public class CListBox extends CScrollableContainer {
         if (item.font == null) {
             item.font = this.font;
         }
-
-        // TODO: Remove this?
-        // if (!horizontalScrollingEnabled) {
-        //     item.setWidth(this.width - verticalScrollBar.getWidth());
-        // }
-
         item.setParent(content);
-        item.setListBox(this);
-        
+        item.setListBox(this);        
         if (index < 0 || index >= content.contents().size()) {
             content.contents().add(item);
         } else {
@@ -378,36 +365,22 @@ public class CListBox extends CScrollableContainer {
 
     @Override
     public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
-        super.render(renderer, mouseX, mouseY, delta);
         if (visible) {
             renderX = getCalculatedX();
             renderY = getCalculatedY();
             renderer.enableClipping(renderX, renderY, renderX + width, renderY + height);
             renderBackground(renderer);
-            renderSelection(renderer);
-            CListBoxEntry hoveredWidget = entryAtMousePointer(mouseX, mouseY);
-            if (hoveredWidget != null) {
-                int componentWidth = componentVisibleWidth();
-                int componentHeight = hoveredWidget.getHeight();
-                int componentY = hoveredWidget.getCalculatedY();
-                renderer.fill(renderX + 1, componentY, 
-                        renderX + componentWidth, componentY + componentHeight - 1, 
-                        CWidget.getPalette().HOVERED_BACKGROUND);
-                renderer.drawRectangle(renderX + 1, componentY, 
-                        renderX + componentWidth, componentY + componentHeight - 1, 
-                        CWidget.getPalette().HOVERED_BORDER);
-            }
+            renderSelectedBackground(renderer);
+            renderHoveredBackground(renderer, entryAtMousePointer(mouseX, mouseY));
             super.render(renderer, mouseX, mouseY, delta);
-            renderer.drawRectangle(getCalculatedX(), getCalculatedY(), 
-                    getCalculatedX() + getWidth(), getCalculatedY() + getHeight(), 
-                    CWidget.getPalette().SELECTED_BACKGROUND);
+            renderBorder(renderer);
             renderer.disableClipping();
         }
     }
 
 
     private void renderBackground(BaseRenderer renderer) {
-        if (this.listHasBackground) {
+        if (listHasBackground) {
             int componentWidth = getWidth();
             int componentHeight = getHeight();
             renderer.fill(renderX, getCalculatedY(), 
@@ -417,13 +390,37 @@ public class CListBox extends CScrollableContainer {
     }
 
 
-    private void renderSelection(BaseRenderer renderer) {
+    private void renderSelectedBackground(BaseRenderer renderer) {
         if (selected != null) {
             int componentWidth = componentVisibleWidth();
             int componentHeight = selected.getHeight() + 1;
             int componentY = renderY + selected.getY() - 1 - (int)getVerticalScrollAmount();
             renderer.fill(renderX, componentY, 
                     renderX + componentWidth, componentY + componentHeight, 
+                    CWidget.getPalette().SELECTED_BACKGROUND);
+        }
+    }
+
+
+    private void renderHoveredBackground(BaseRenderer renderer, CListBoxEntry hoveredWidget) {
+        if (hoveredWidget != null) {
+            int componentWidth = componentVisibleWidth();
+            int componentHeight = hoveredWidget.getHeight();
+            int componentY = hoveredWidget.getCalculatedY();
+            renderer.fill(renderX + 1, componentY, 
+                    renderX + componentWidth, componentY + componentHeight - 1, 
+                    CWidget.getPalette().HOVERED_BACKGROUND);
+            renderer.drawRectangle(renderX + 1, componentY, 
+                    renderX + componentWidth, componentY + componentHeight - 1, 
+                    CWidget.getPalette().HOVERED_BORDER);
+        }
+    }
+
+
+    private void renderBorder(BaseRenderer renderer) {
+        if (listHasBorder) {
+            renderer.drawRectangle(renderX, renderY, 
+                    renderX + width, renderY + height, 
                     CWidget.getPalette().SELECTED_BACKGROUND);
         }
     }

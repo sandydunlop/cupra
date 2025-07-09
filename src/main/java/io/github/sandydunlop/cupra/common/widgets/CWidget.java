@@ -8,7 +8,6 @@ import io.github.sandydunlop.cupra.common.util.Dimension;
 import io.github.sandydunlop.cupra.common.util.MousePointer;
 import io.github.sandydunlop.cupra.common.util.DepthLimit;
 import io.github.sandydunlop.cupra.common.CupraScreen;
-import io.github.sandydunlop.cupra.common.CupraException;
 import io.github.sandydunlop.cupra.common.events.CKeyEvent;
 import io.github.sandydunlop.cupra.common.events.CMouseEvent;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFont;
@@ -23,13 +22,13 @@ import io.github.sandydunlop.cupra.common.palette.ColorPalette;
 
 public abstract class CWidget implements KeyboardInput, MouseInput {
 	protected static final Logger LOGGER = LogManager.getLogger("Cupra");
-    private static ColorPalette palette = ColorPalette.Blueberry;
+    private static ColorPalette palette = ColorPalette.Copper;
     private static int baseFontSize = 14;
     private static boolean cachedFontsInvalidated = false;
-    private int debug = 0;
-    protected CContainer parent = null;
-    protected String id = null;
     protected FontSpec font;
+    protected String id = null;
+    protected CContainer parent = null;
+    protected int debug = 0;
     protected int x = 0;
     protected int y = 0;
     protected int width = 0;
