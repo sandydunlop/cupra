@@ -20,7 +20,6 @@ import javax.swing.SwingUtilities;
 
 import io.github.sandydunlop.cupra.common.CupraScreen;
 import io.github.sandydunlop.cupra.common.events.CMouseEvent;
-import io.github.sandydunlop.cupra.common.CupraException;
 import io.github.sandydunlop.cupra.common.fonts.FontSpec;
 import io.github.sandydunlop.cupra.common.util.DepthLimit;
 import io.github.sandydunlop.cupra.common.widgets.CWidget;
@@ -33,6 +32,7 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
     private transient AwtRenderer renderer = null;
     private transient CupraScreen screen = null;
     private transient CWidget draggingWidget = null;
+    private transient CWidget mouseIsOver = null;
     private transient FontSpec fontOptions = new FontSpec();
     private Cursor arrowCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     private Cursor iBeamCursor = new Cursor(Cursor.TEXT_CURSOR);
@@ -42,6 +42,8 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
     private int windowWidth;
     private int windowHeight;
     private boolean designMode = false;
+    protected double mouseX = -1;
+    protected double mouseY = -1;
     protected double dragFromX = -1;
     protected double dragFromY = -1;
 
@@ -179,7 +181,7 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        paintComponent(g, null, 0, 0, 0);
+        paintComponent(g, null, (int)mouseX, (int)mouseY, 0);
     }
 
 
@@ -192,17 +194,13 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
             renderer = new AwtRenderer(g2d);
             renderer.setFont(fontOptions);
         }
-        try {
-            if (widget != null) {
-                widget.render(renderer, mouseX, mouseY, delta);
-            }else if (screen != null){
-                if (!screen.isInitialized()){
-                    screen.init();
-                }
-                screen.render(renderer, mouseX, mouseY, delta);
+        if (widget != null) {
+            widget.render(renderer, mouseX, mouseY, delta);
+        }else if (screen != null){
+            if (!screen.isInitialized()){
+                screen.init();
             }
-        } catch (CupraException e) {
-            e.printStackTrace();
+            screen.render(renderer, mouseX, mouseY, delta);
         }
         if (designMode) {
             drawRulers();
@@ -253,8 +251,8 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
 
     private CMouseEvent cupraMouseEvent(MouseEvent e) {
         CMouseEvent event = new CMouseEvent()
-                .setX(e.getX())
-                .setY(e.getY())
+                .setX(e.getX() - 1)
+                .setY(e.getY() - 3)
                 .setButton(e.getButton())
                 .setClickCount(e.getClickCount())
                 .setModifiers(e.getModifiersEx());
@@ -369,24 +367,25 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
     }
 
 
-    // private CWidget mouseIsOver = null;
     public void mouseMoved(MouseEvent e) {
         CMouseEvent mouse = cupraMouseEvent(e);
+        mouseX = mouse.getX();
+        mouseY = mouse.getY();
         if (inputHandler == null) {
             CWidget widget = screen.hoveredWidget(mouse, DepthLimit.COMPONENT);
             if (widget != null) {
                 setMousePointerForWidget(widget);
-                // if (widget.hasMosueOverEffects()) {
-                //     renderWidget(widget, e.getX(), e.getY(), 0);
-                //     mouseIsOver = widget;
-                // }
+                if (widget.hasMosueOverEffects()) {
+                    render();
+                    mouseIsOver = widget;
+                }
             }else{
                 currentCursor = arrowCursor;
                 setCursor(currentCursor);
-                // if (mouseIsOver != null) {
-                //     renderWidget(widget, e.getX(), e.getY(), 0);
-                //     mouseIsOver = null;
-                // }
+                if (mouseIsOver != null) {
+                    render();
+                    mouseIsOver = null;
+                }
             }
         }else{
             CWidget widget = screen.hoveredWidget(mouse, DepthLimit.COMPONENT);

@@ -493,7 +493,7 @@ public abstract class CWidget implements KeyboardInput, MouseInput {
     }
 
 
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) throws CupraException {
+    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
         // This is to be overridden by every widget
     }
 }

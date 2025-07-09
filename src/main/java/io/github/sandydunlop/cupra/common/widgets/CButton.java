@@ -62,7 +62,7 @@ public class CButton extends CWidget {
 
 
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) throws CupraException {
+    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
         int renderWidth = getWidth();
         int renderHeight = getHeight();
         int fillColor = CWidget.getPalette().HOVERED_BACKGROUND;

@@ -1,12 +1,12 @@
 package io.github.sandydunlop.cupra.common.widgets;
 
-import io.github.sandydunlop.cupra.common.CupraException;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFont;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFontFactory;
 import io.github.sandydunlop.cupra.common.render.BaseRenderer;
 
 
 public class CListBoxEntry extends CWidget {
+	private static final int LIST_ENTRY_HORIZONTAL_PADDING = 3;
 	private CListBox listBox = null;
 	private final String title;
 	private String key = null;
@@ -67,8 +67,6 @@ public class CListBoxEntry extends CWidget {
 
 	@Override
     public void recalculateSize() {
-		// BitmapFont bmf = BitmapFontFactory.load(font);
-		// this.height = bmf.getHeight() + 1;
 		if (value == null) {
 			BitmapFont bmf = BitmapFontFactory.load(font);
 			height = bmf.getHeight() + 1;
@@ -81,37 +79,33 @@ public class CListBoxEntry extends CWidget {
 
 
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta)  throws CupraException {
-		int backgroundColor = CWidget.getPalette().INPUT_BACKGROUND;
-		int textColor = CWidget.getPalette().REGULAR_TEXT;
-		renderX = getCalculatedX();
+    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
+		renderX = getCalculatedX() + 1;
 		renderY = getCalculatedY();
-		int w = getWidth();
-		if (isSelected()) {
-			backgroundColor = CWidget.getPalette().SELECTED_BACKGROUND;
-			textColor = CWidget.getPalette().SELECTED_TEXT;
-		}
 		if (isHovered(mouseX, mouseY)) {
-			backgroundColor = CWidget.getPalette().HOVERED_BACKGROUND;
-		}
-        renderer.fill(renderX, renderY, renderX + w, renderY + getHeight(), backgroundColor);
-		if (isHovered(mouseX, mouseY)) {
-        	renderer.drawRectangle(renderX, renderY, renderX + w, renderY + getHeight() - 1, CWidget.getPalette().HOVERED_BORDER);
+			int visibleWidth = listBox.componentVisibleWidth() - 1;
+            // Code will go here for more complex entries
 		}
 		if (font != null) {
+			int textColor = isSelected() ? CWidget.getPalette().SELECTED_TEXT : CWidget.getPalette().REGULAR_TEXT;
 			font.setColor(textColor);
 			renderer.setFont(font);
-			renderer.drawText(title, renderX + 4, renderY + 1);
+			renderer.drawText(title, renderX + LIST_ENTRY_HORIZONTAL_PADDING, renderY);
 		}
 	}
 
 
 	public boolean isHovered(int mouseX, int mouseY) {
-		return mouseX >= renderX&& mouseX <= renderX + getWidth() && mouseY >= renderY && mouseY < renderY + getHeight();
+		return mouseX >= renderX && mouseX <= renderX + width && mouseY >= renderY && mouseY < renderY + getHeight();
 	}
 
 
-	public String getTitle() {
+	public String getText() {
+		return title;
+	}
+
+
+	public String toString() {
 		return title;
 	}
 }

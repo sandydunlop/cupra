@@ -42,7 +42,7 @@ public class CImage extends CWidget {
 
 
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) throws CupraException {
+    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
         int iconWidth = getWidth();
         int iconHeight = getHeight();
         int iconX = getCalculatedX();
