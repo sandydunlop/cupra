@@ -1,5 +1,6 @@
 package io.github.sandydunlop.cupra.common.widgets;
 
+import io.github.sandydunlop.cupra.common.events.CMouseEvent;
 import io.github.sandydunlop.cupra.common.render.BaseRenderer;
 import io.github.sandydunlop.cupra.common.util.Orientation;
 import io.github.sandydunlop.cupra.platform.PlatformServices;
@@ -7,7 +8,6 @@ import io.github.sandydunlop.cupra.platform.PlatformServices;
 
 public class CScrollBar extends CAbstractScrollable {
     protected static final int DEFAULT_THICKNESS = 8;
-    protected boolean showButtons = false;
 
 
     public CScrollBar(CContainer parent) {
@@ -27,23 +27,13 @@ public class CScrollBar extends CAbstractScrollable {
     }
 
 
-    public void setShowButtons(boolean show) {
-        showButtons = show;
-    }
-
-
-    public boolean getShowButtons() {
-        return showButtons;
-    }
-
-
     //
     // Layout & Rendering
     //
 
 
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
+    public void render(BaseRenderer renderer, CMouseEvent mouse) {
         if (getMaxScroll() > 0) {
             int renderX = getCalculatedX();
             int renderY = getCalculatedY();
@@ -55,14 +45,14 @@ public class CScrollBar extends CAbstractScrollable {
             if (orientation == Orientation.HORIZONTAL) {
                 renderer.fill(renderX, renderY, 
                         renderX + renderSize, renderY + renderThickness, 
-                        CWidget.getPalette().INPUT_BACKGROUND);
+                        CWidget.getPalette().INPUT_SEPARATOR);
                 renderer.fill(scrollerStart, renderY, 
                         scrollerStart + scrollerSize, renderY + renderThickness, 
                         CWidget.getPalette().HOVERED_BACKGROUND);
             } else {
                 renderer.fill(renderX, renderY, renderX + 
                         renderThickness, renderY + renderSize, 
-                        CWidget.getPalette().INPUT_BACKGROUND);
+                        CWidget.getPalette().INPUT_SEPARATOR);
                 renderer.fill(renderX, scrollerStart, 
                         renderX + renderThickness, scrollerStart + scrollerSize, 
                         CWidget.getPalette().HOVERED_BACKGROUND);

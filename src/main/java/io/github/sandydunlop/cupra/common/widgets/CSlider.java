@@ -1,5 +1,6 @@
 package io.github.sandydunlop.cupra.common.widgets;
 
+import io.github.sandydunlop.cupra.common.events.CMouseEvent;
 import io.github.sandydunlop.cupra.common.render.BaseRenderer;
 import io.github.sandydunlop.cupra.common.util.Orientation;
 
@@ -51,12 +52,13 @@ public class CSlider extends CAbstractScrollable {
 
 
     @Override
-	public void layout(){
+    protected double getMaxScroll() {
+        return getMax();
     }
 
 
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
+    public void render(BaseRenderer renderer, CMouseEvent mouse) {
         if (getMax() > 0) {
             int renderX = getCalculatedX();
             int renderY = getCalculatedY();

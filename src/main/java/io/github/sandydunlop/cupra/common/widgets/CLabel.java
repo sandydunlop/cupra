@@ -1,6 +1,7 @@
 package io.github.sandydunlop.cupra.common.widgets;
 
 import io.github.sandydunlop.cupra.common.CupraScreen;
+import io.github.sandydunlop.cupra.common.events.CMouseEvent;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFont;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFontFactory;
 import io.github.sandydunlop.cupra.common.fonts.FontSpec;
@@ -135,7 +136,7 @@ public class CLabel extends CWidget {
 
     
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
+    public void render(BaseRenderer renderer, CMouseEvent mouse) {
         if (text != null && !text.isBlank()) {
             int renderX = this.getCalculatedX();
             BitmapFont f = BitmapFontFactory.load(this.font);

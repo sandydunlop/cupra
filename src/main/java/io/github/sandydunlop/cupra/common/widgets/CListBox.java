@@ -9,6 +9,8 @@ import io.github.sandydunlop.cupra.common.events.CMouseEvent;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFont;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFontFactory;
 import io.github.sandydunlop.cupra.common.render.BaseRenderer;
+import io.github.sandydunlop.cupra.common.util.DepthLimit;
+import io.github.sandydunlop.cupra.common.util.MousePointer;
 
 
 public class CListBox extends CScrollableContainer {
@@ -23,6 +25,12 @@ public class CListBox extends CScrollableContainer {
 	protected int listBorderColor = CWidget.getPalette().HOVERED_BORDER;
     private int renderX;
     private int renderY;
+
+    List<CListBoxColumn> columns = new ArrayList<>();
+    private int headerHeight = 0;
+    private double mousePressedX = 0;
+    private int resizingColumn = -1;
+    private int columnOriginalWidth = 0;
 
 
     public CListBox(CContainer parent) {
@@ -39,6 +47,7 @@ public class CListBox extends CScrollableContainer {
         this.setPadding(0);
         content = new CContainer();
         content.setPadding(0);
+        content.setId("content");
     }
     
 
@@ -169,45 +178,18 @@ public class CListBox extends CScrollableContainer {
 
 
     @Override
-    public void setWidth(int width) {
-        super.setWidth(width);
-        getVerticalScrollAmount();
-        if (content != null && !horizontalScrollingEnabled) {
-            content.setWidth(width - verticalScrollBar.getWidth());
-            for (CWidget widget : content.contents()) {
-                widget.setWidth(width - verticalScrollBar.getWidth());
-            }
+    public void add(Object... o) {
+        if (o== null || o.length == 0) {
+            LOGGER.error("CListBox.add: expected at least one non-null parameter");
+            return;
         }
-        super.layout();
-    }
-
-
-    @Override
-    public void setHeight(int height) {
-        super.setHeight(height);
-        getHorizontalScrollAmount();
-        if (content != null) {
-            content.setHeight(height - horizontalScrollBarHeightUsed());
+        if (o[0] instanceof CListBoxEntry) {
+            LOGGER.error("How did we arrive here?");
+            return;
         }
-        super.layout();
-    }
-
-
-    @Override
-    public int getDefaultHeight(){
-        return 80;
-    }
-
-
-    @Override
-    public int getDefaultWidth(){
-        return 200;
-    }
-
-
-    @Override
-    public void add(CWidget w) {
-        // Do nothing
+        CListBoxEntry entry = new CListBoxEntry(null, null);
+        entry.setValues(o);
+        add(entry);
     }
 
 
@@ -295,12 +277,53 @@ public class CListBox extends CScrollableContainer {
     }
 
 
-    protected CListBoxEntry entryAtMousePointer(int mouseX, int mouseY) {
-        if (!isMouseOver(mouseX, mouseY)) return null;
-        int yWithinBox = mouseY - renderY;
-        int yWithinList = yWithinBox + (int)verticalScrollAmount;
-        int posWithinList = yWithinList / itemHeight;
-        return getEntry(posWithinList);
+    public void addColumn(String name, int width) {
+        CListBoxColumn column = new CListBoxColumn(name, width);
+        columns.add(column);
+        headerHeight = 20; //TODO: Make this dynamic
+        content.setTopOffset(headerHeightUsed());
+    }
+
+
+    //
+    // === Layout ===
+    //
+
+    
+    @Override
+    public int getDefaultHeight(){
+        return 80;
+    }
+
+
+    @Override
+    public int getDefaultWidth(){
+        return 200;
+    }
+
+
+    @Override
+    public void setWidth(int width) {
+        super.setWidth(width);
+        if (content != null && !horizontalScrollingEnabled) {
+            content.setWidth(width - verticalScrollBar.getWidth());
+            for (CWidget widget : content.contents()) {
+                widget.setWidth(width - verticalScrollBar.getWidth());
+            }
+        }
+        super.layout();
+    }
+
+
+    @Override
+    public void setHeight(int height) {
+        super.setHeight(height);
+        getHorizontalScrollAmount();
+        if (content != null) {
+            content.setHeight(height - horizontalScrollBarHeightUsed());
+        }
+        updateContentPosition();
+        super.layout();
     }
 
 
@@ -324,14 +347,10 @@ public class CListBox extends CScrollableContainer {
     }
 
 
-    //
-    // === Layout & Render ===
-    //
-
-    
     @Override
     public void layout() {
         if (this.width > 0) {
+            content.setTopOffset(headerHeightUsed());
             if (CWidget.isFontCacheInvalidated() && !content.contents().isEmpty()) {
                 CWidget widget = content.contents().get(0);
                 itemHeight = widget.getCalculatedHeight();
@@ -352,10 +371,17 @@ public class CListBox extends CScrollableContainer {
                     widest = widget.getWidth();
                 }
             }
-            setContentHeight(content.contents().size() * itemHeight);
-            if (horizontalScrollingEnabled) {
-                setContentWidth(widest);
+            if(columns!=null && !columns.isEmpty()){
+                int w = 0;
+                for (int i=0; i<columns.size(); i++){
+                    w += columns.get(i).getWidth();
+                }
+                setContentWidth(w);
             }
+            setContentHeight(content.contents().size() * itemHeight); //TODO: plus header height?
+            // if (horizontalScrollingEnabled) {
+            //     setContentWidth(widest);
+            // }
             double sa = getVerticalScrollAmount(); // This puts content at the correct position
             setVerticalScrollAmount(sa);
             super.layout();
@@ -363,19 +389,70 @@ public class CListBox extends CScrollableContainer {
     }
 
 
+    //
+    // === Rendering ===
+    //
+
+    
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
+    public void render(BaseRenderer renderer, CMouseEvent mouse) {
         if (visible) {
             renderX = getCalculatedX();
             renderY = getCalculatedY();
             renderer.enableClipping(renderX, renderY, renderX + width, renderY + height);
             renderBackground(renderer);
             renderSelectedBackground(renderer);
-            renderHoveredBackground(renderer, entryAtMousePointer(mouseX, mouseY));
-            super.render(renderer, mouseX, mouseY, delta);
+            if (this == mouse.getWidgetUnderMouse()) {
+                renderHoveredBackground(renderer, entryAtMousePointer(mouse));
+            }
+            renderHeaders(renderer);
+            super.render(renderer, mouse);
             renderBorder(renderer);
             renderer.disableClipping();
         }
+    }
+
+
+    private void renderHeaders(BaseRenderer renderer) {
+        int normalFontSize = font.getSize();
+		font.setColor(CWidget.getPalette().REGULAR_TEXT);
+        font.setSize(normalFontSize - 3);
+		renderer.setFont(font);
+        BitmapFont bmf = BitmapFontFactory.load(font);
+        int componentX = renderX - (int)horizontalScrollAmount;
+        renderer.enableClipping(renderX, renderY, 
+                renderX + width - verticalScrollBarWidthUsed(), renderY + height - horizontalScrollBarHeightUsed());
+        for (int i=0; i<columns.size(); i++) {
+            CListBoxColumn column = columns.get(i);
+            renderHeader(renderer, bmf, column, componentX);
+            componentX += column.getWidth();
+            renderer.drawVerticalLine(componentX, renderY + headerHeight, 
+                    renderY + height - horizontalScrollBarHeightUsed(), 
+                    CWidget.getPalette().INPUT_SEPARATOR);
+        }
+        renderer.fill(componentX, renderY, 
+                renderX + width - verticalScrollBarWidthUsed(), renderY + headerHeight, 
+                CWidget.getPalette().INPUT_SEPARATOR);
+        renderer.disableClipping();
+        font.setSize(normalFontSize);
+    }
+
+
+    private void renderHeader(BaseRenderer renderer, BitmapFont bmf, CListBoxColumn column, int componentX) {
+        int componentWidth = column.getWidth();
+        int componentHeight = headerHeightUsed();
+        renderer.fill(componentX, renderY, 
+                componentX + componentWidth, renderY + componentHeight, 
+                CWidget.getPalette().REGULAR_BACKGROUND);
+        renderer.drawRectangle(componentX, renderY, 
+                componentX + componentWidth, renderY + componentHeight, 
+                CWidget.getPalette().HOVERED_BORDER);
+        String text = column.getName();
+        int textWidth = bmf.stringWidth(text);
+        int textHeight = bmf.getHeight();
+        int textX = (componentX + (componentWidth/2)) - (textWidth/2);
+        int textY = (renderY + (componentHeight/2)) - (textHeight/2);
+        renderer.drawText(text, textX, textY);
     }
 
 
@@ -394,7 +471,7 @@ public class CListBox extends CScrollableContainer {
         if (selected != null) {
             int componentWidth = componentVisibleWidth();
             int componentHeight = selected.getHeight() + 1;
-            int componentY = renderY + selected.getY() - 1 - (int)getVerticalScrollAmount();
+            int componentY = renderY + headerHeightUsed() + selected.getY() - 1 - (int)getVerticalScrollAmount();
             renderer.fill(renderX, componentY, 
                     renderX + componentWidth, componentY + componentHeight, 
                     CWidget.getPalette().SELECTED_BACKGROUND);
@@ -431,33 +508,103 @@ public class CListBox extends CScrollableContainer {
     }
 
 
-    // === Mouse ===
-
-
-    private boolean isMouseOver(int mouseX, int mouseY) {
-        return (this.visible && 
-                mouseX >= this.getCalculatedX() && 
-                mouseY >= this.getCalculatedY() && 
-                mouseX < (this.getCalculatedX() + this.getWidth()) && 
-                mouseY < (this.getCalculatedY() + this.getHeight()));
+    protected int headerHeightUsed() {
+        if (columns.isEmpty()) return 0;
+        return headerHeight;
     }
 
 
+    // === Mouse ===
+
+
+    protected CListBoxEntry entryAtMousePointer(CMouseEvent mouse) {
+        if (!isMouseOver(mouse)) return null;
+        if (itemHeight==0) return null;
+        int yWithinBox = (int)mouse.getY() - renderY - headerHeightUsed();
+        if (yWithinBox < 0) return null;
+        int yWithinList = yWithinBox + (int)verticalScrollAmount;
+        int posWithinList = yWithinList / itemHeight;
+        return getEntry(posWithinList);
+    }
+
+
+	@Override
+	public CWidget hoveredWidget(CMouseEvent mouse, DepthLimit depth) {
+        if (isMouseOverColumnHeadings(mouse) && mouseOverColumnSeparator((int)mouse.getX()) > -1) {
+            mousePointer = MousePointer.MOVE_LEFT_RIGHT;
+        } else {
+            mousePointer = MousePointer.ARROW;
+        }
+        return super.hoveredWidget(mouse, depth);
+    }
+
+
+    private boolean isMouseOverColumnHeadings(CMouseEvent mouse) {
+        if (mouse.getY() <= renderY + headerHeightUsed() && 
+                mouse.getX() < renderX + width - verticalScrollBarWidthUsed()){
+            return true;
+        }
+        return false;
+    }
+
+
+    private int mouseOverColumnSeparator(int mouseX) {
+        int componentX = renderX - (int)horizontalScrollAmount;
+        if (columns.size() < 2) return -1;
+        for (int i=0; i<columns.size(); i++) {
+            componentX += columns.get(i).getWidth();
+            if (mouseX > componentX -2 && mouseX < componentX + 2) {
+                return i;
+            }
+        }
+        return -1;
+    }
+	
+	
     @Override
     public boolean mousePressed(CMouseEvent mouse) {
         super.mousePressed(mouse);
         if (!isMouseOver(mouse)) return false;
-        if (mouse.getX() <= getWidth() - verticalScrollBarWidthUsed()) {
-            CListBoxEntry entry = entryAtMousePointer((int)mouse.getX(), (int)mouse.getY());
-            if (entry != null) {
-                setSelected(entry);
+        if (mouse.getX() <= renderX + getWidth() - verticalScrollBarWidthUsed()) {
+            if (isMouseOverColumnHeadings(mouse)) {
+                resizingColumn = mouseOverColumnSeparator((int)mouse.getX());
+                if (resizingColumn > -1){
+                    mousePressedX = mouse.getX();
+                    columnOriginalWidth = columns.get(resizingColumn).getWidth();
+                    return true;
+                }
+                // Click heading to order by could go here
+                return false;
+            }else{
+                CListBoxEntry entry = entryAtMousePointer(mouse);
+                if (entry != null) {
+                    setSelected(entry);
+                }
+                if (this.onClick != null) {
+                    this.onClick.onClick(entry);
+                }
+                return true;
             }
-            if (this.onClick != null) {
-                this.onClick.onClick(entry);
-            }
-            return true;
         }
         return false;
+    }
+
+
+    @Override
+    public boolean mouseDragged(CMouseEvent mouse) {
+        if (mouse.getButton() != CMouseEvent.PRIMARY_BUTTON || resizingColumn == -1) return false;
+        double dragDistance = mouse.getX() - mousePressedX;
+        CListBoxColumn column = columns.get(resizingColumn);
+        column.setWidth((int)(columnOriginalWidth + dragDistance));
+        //LOGGER.debug("Resizing column {}: {} ({})", dragDistance, column.getWidth(), mousePressedX);
+        return true;
+    }
+
+
+    @Override
+    public boolean mouseReleased(CMouseEvent mouse) {
+        resizingColumn = -1;
+        return true;
     }
 
 

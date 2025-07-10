@@ -193,12 +193,12 @@ public class CNumberBox extends CWidget{
 
 
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
-        super.render(renderer, mouseX, mouseY, delta);
+    public void render(BaseRenderer renderer, CMouseEvent mouse) {
+        super.render(renderer, mouse);
         positionChildren();
-        textbox.render(renderer, mouseX, mouseY, delta);
-        upButton.render(renderer, mouseX, mouseY, delta);
-        downButton.render(renderer, mouseX, mouseY, delta);
+        textbox.render(renderer, mouse);
+        upButton.render(renderer, mouse);
+        downButton.render(renderer, mouse);
         if (this.getDebug() != 0){
             renderer.drawRectangle(getCalculatedX(), getCalculatedY(), getCalculatedX()+getWidth(), getCalculatedY()+getHeight(), this.getDebug());
         }

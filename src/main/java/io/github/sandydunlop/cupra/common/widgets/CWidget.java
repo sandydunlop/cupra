@@ -377,7 +377,6 @@ public abstract class CWidget implements KeyboardInput, MouseInput {
         } else if (getDefaultHeight() > 0) {
             return getDefaultHeight();
         }else{
-            LOGGER.debug("getCalculatedHeight: Widget with unknown height. id: {}", id);
             return 0;
         }
     }
@@ -492,7 +491,7 @@ public abstract class CWidget implements KeyboardInput, MouseInput {
     }
 
 
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
+    public void render(BaseRenderer renderer, CMouseEvent mouse) {
         // This is to be overridden by every widget
     }
 }

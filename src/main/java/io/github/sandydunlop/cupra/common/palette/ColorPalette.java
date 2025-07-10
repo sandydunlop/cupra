@@ -8,6 +8,7 @@ public class ColorPalette {
     public int SELECTED_BACKGROUND = 0xFFFFFFFF;
     public int SELECTED_TEXT = 0xFF000000;
     public int INPUT_BACKGROUND = 0xFF000000;
+    public int INPUT_SEPARATOR = 0xFF333333;
     public int WIDGET_TEXT = 0xFFFFFFFF;
 
     public static final Copper Copper = new Copper();

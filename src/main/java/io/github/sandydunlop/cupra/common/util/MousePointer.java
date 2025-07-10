@@ -4,6 +4,7 @@ public enum MousePointer {
 
     ARROW,
     POINTING_HAND,
-    I_BEAM
+    I_BEAM,
+    MOVE_LEFT_RIGHT
 
 }

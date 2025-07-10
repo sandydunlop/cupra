@@ -237,10 +237,10 @@ public class CupraScreen extends CContainer {
 
     
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
-        super.render(renderer, mouseX, mouseY, delta);
+    public void render(BaseRenderer renderer, CMouseEvent mouse) {
+        super.render(renderer, mouse);
         if (overlaidWidget != null){
-            overlaidWidget.render(renderer, mouseX, mouseY, delta);
+            overlaidWidget.render(renderer, mouse);
         }
     }
 }

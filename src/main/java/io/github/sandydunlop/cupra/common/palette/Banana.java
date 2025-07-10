@@ -9,6 +9,7 @@ public class Banana extends ColorPalette{
         SELECTED_BACKGROUND = 0xFFC4AC54;
         SELECTED_TEXT = 0xFF000000;
 	    INPUT_BACKGROUND = 0xFF000000;
+        INPUT_SEPARATOR = argbLerp(0.3f, REGULAR_BACKGROUND, INPUT_BACKGROUND);
         WIDGET_TEXT = 0xFF000000;
     }
 }

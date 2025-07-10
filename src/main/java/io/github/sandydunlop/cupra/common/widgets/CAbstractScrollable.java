@@ -117,7 +117,7 @@ public abstract class CAbstractScrollable extends CWidget {
 
 
     @Override
-    public abstract void render(BaseRenderer renderer, int mouseX, int mouseY, float delta);
+    public abstract void render(BaseRenderer renderer, CMouseEvent mouse);
 
 
     protected int getRenderSize() {
@@ -136,6 +136,7 @@ public abstract class CAbstractScrollable extends CWidget {
 
 
     protected int getScrollerStart(int renderSize, int renderPosition, int scrollerSize) {
+        if (getMaxScroll() == 0) return renderPosition;
         int scrollerStart = (int)scrollAmount * (renderSize - scrollerSize) / (int)getMaxScroll() + renderPosition;
         if (scrollerStart < renderPosition) {
             scrollerStart = renderPosition;
@@ -179,7 +180,7 @@ public abstract class CAbstractScrollable extends CWidget {
     @Override
     public boolean mouseReleased(CMouseEvent mouse) {
         scrolling = false;
-        return false;
+        return true;
     }
 
 

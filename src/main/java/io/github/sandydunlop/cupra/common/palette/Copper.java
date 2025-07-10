@@ -9,6 +9,7 @@ public class Copper extends ColorPalette{
         SELECTED_BACKGROUND = 0xFFA05030;
         SELECTED_TEXT = 0xFFDDDDDD;
 	    INPUT_BACKGROUND = 0xFF000000;
+        INPUT_SEPARATOR = argbLerp(0.3f, REGULAR_BACKGROUND, INPUT_BACKGROUND);
         WIDGET_TEXT = 0xFFDDDDDD;
     }
 }

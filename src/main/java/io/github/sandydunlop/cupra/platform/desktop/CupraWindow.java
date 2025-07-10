@@ -32,11 +32,14 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
     private transient AwtRenderer renderer = null;
     private transient CupraScreen screen = null;
     private transient CWidget draggingWidget = null;
-    private transient CWidget mouseIsOver = null;
+    private transient CWidget widgetUnderMouse = null;
     private transient FontSpec fontOptions = new FontSpec();
+
     private Cursor arrowCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     private Cursor iBeamCursor = new Cursor(Cursor.TEXT_CURSOR);
     private Cursor pointingHandCursor = new Cursor(Cursor.HAND_CURSOR);
+    private Cursor resizeEastWestCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
+
     private Cursor currentCursor = arrowCursor;
     private int backgroundColor;
     private int windowWidth;
@@ -187,6 +190,8 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
 
     protected void paintComponent(Graphics g, CWidget widget, int mouseX, int mouseY, float delta) {
         Graphics2D g2d = (Graphics2D) g;
+        CMouseEvent mouse = new CMouseEvent(mouseX, mouseY);
+        mouse.setWidgetUnderMouse(widgetUnderMouse);
         if (renderer == null){
             renderer = new AwtRenderer(g2d);
             renderer.setFont(fontOptions);
@@ -195,12 +200,12 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
             renderer.setFont(fontOptions);
         }
         if (widget != null) {
-            widget.render(renderer, mouseX, mouseY, delta);
+            widget.render(renderer, mouse);
         }else if (screen != null){
             if (!screen.isInitialized()){
                 screen.init();
             }
-            screen.render(renderer, mouseX, mouseY, delta);
+            screen.render(renderer, mouse);
         }
         if (designMode) {
             drawRulers();
@@ -372,19 +377,20 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
         mouseX = mouse.getX();
         mouseY = mouse.getY();
         if (inputHandler == null) {
+            // This call to hoveredWidget also checks overlaid widgets like dropdown lists
             CWidget widget = screen.hoveredWidget(mouse, DepthLimit.COMPONENT);
             if (widget != null) {
                 setMousePointerForWidget(widget);
                 if (widget.hasMosueOverEffects()) {
+                    widgetUnderMouse = widget;
                     render();
-                    mouseIsOver = widget;
                 }
             }else{
                 currentCursor = arrowCursor;
                 setCursor(currentCursor);
-                if (mouseIsOver != null) {
+                if (widgetUnderMouse != null) {
+                    widgetUnderMouse = null;
                     render();
-                    mouseIsOver = null;
                 }
             }
         }else{
@@ -402,6 +408,9 @@ public class CupraWindow  extends JPanel implements WindowStateListener, MouseLi
                 break;
             case I_BEAM:
                 updatedCursor = iBeamCursor;
+                break;
+            case MOVE_LEFT_RIGHT:
+                updatedCursor = resizeEastWestCursor;
                 break;
             default:
                 updatedCursor = arrowCursor;

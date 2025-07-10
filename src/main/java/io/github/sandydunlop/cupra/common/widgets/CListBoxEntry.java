@@ -1,5 +1,10 @@
 package io.github.sandydunlop.cupra.common.widgets;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import io.github.sandydunlop.cupra.common.events.CMouseEvent;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFont;
 import io.github.sandydunlop.cupra.common.fonts.BitmapFontFactory;
 import io.github.sandydunlop.cupra.common.render.BaseRenderer;
@@ -11,6 +16,7 @@ public class CListBoxEntry extends CWidget {
 	private final String title;
 	private String key = null;
 	private Object value;
+	private Object[] values = null;
 	private boolean selected = false;
 	private int renderX = 0;
 	private int renderY = 0;
@@ -27,6 +33,12 @@ public class CListBoxEntry extends CWidget {
 
 	public CListBoxEntry(String title, Object value) {
 		this(title, null, value);
+	}
+
+
+	public void setValues(Object... values) {
+		if (values == null) return;
+		this.values = Arrays.copyOf(values, values.length);
 	}
 
 
@@ -67,36 +79,54 @@ public class CListBoxEntry extends CWidget {
 
 	@Override
     public void recalculateSize() {
-		if (value == null) {
-			BitmapFont bmf = BitmapFontFactory.load(font);
+		BitmapFont bmf = BitmapFontFactory.load(font);
+		if (title != null) {
 			height = bmf.getHeight() + 1;
 			width = bmf.stringWidth(title);
-		} else {
-			// TODO: Make this work
-			
+		} else if (values != null) {
+			height = bmf.getHeight() + 1;
+			width = 0;
+			for (int i=0; i<values.length; i++) {
+				String text = (String)values[i];
+				width += bmf.stringWidth(text);
+			}			
 		}
     }
 
 
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
+    public void render(BaseRenderer renderer, CMouseEvent mouse) {
 		renderX = getCalculatedX() + 1;
 		renderY = getCalculatedY();
-		if (isHovered(mouseX, mouseY)) {
+		if (isHovered(mouse)) {
 			int visibleWidth = listBox.componentVisibleWidth() - 1;
             // Code will go here for more complex entries
 		}
-		if (font != null) {
+		if (title != null) {
 			int textColor = isSelected() ? CWidget.getPalette().SELECTED_TEXT : CWidget.getPalette().REGULAR_TEXT;
 			font.setColor(textColor);
 			renderer.setFont(font);
 			renderer.drawText(title, renderX + LIST_ENTRY_HORIZONTAL_PADDING, renderY);
+		} else if (values != null) {
+			int textColor = isSelected() ? CWidget.getPalette().SELECTED_TEXT : CWidget.getPalette().REGULAR_TEXT;
+			font.setColor(textColor);
+			renderer.setFont(font);
+			int componentX = renderX;
+			for (int i=0; i<values.length; i++) {
+				Object o = values[i];
+				CListBoxColumn column = listBox.columns.get(i);
+				String text = (String)o;
+				if (text != null) {
+					renderer.drawText(text, componentX + LIST_ENTRY_HORIZONTAL_PADDING, renderY);
+				}
+				componentX += column.getWidth();
+			}
 		}
 	}
 
 
-	public boolean isHovered(int mouseX, int mouseY) {
-		return mouseX >= renderX && mouseX <= renderX + width && mouseY >= renderY && mouseY < renderY + getHeight();
+	public boolean isHovered(CMouseEvent mouse) {
+		return mouse.getX() >= renderX && mouse.getX() <= renderX + width && mouse.getY() >= renderY && mouse.getY() < renderY + getHeight();
 	}
 
 

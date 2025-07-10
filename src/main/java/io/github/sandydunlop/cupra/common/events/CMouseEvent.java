@@ -1,5 +1,6 @@
 package io.github.sandydunlop.cupra.common.events;
 
+import io.github.sandydunlop.cupra.common.widgets.CWidget;
 
 public class CMouseEvent {
     public static final int PRIMARY_BUTTON = 1;
@@ -20,6 +21,7 @@ public class CMouseEvent {
     private int modifiers = 0;
     private double horizontalAmount = 0;
     private double verticalAmount = 0;
+    private CWidget widgetUnderMouse = null;
 
 
     public CMouseEvent() {
@@ -143,5 +145,15 @@ public class CMouseEvent {
     public CMouseEvent setVerticalAmount(double verticalAmount) {
         this.verticalAmount = verticalAmount;
         return this;
+    }
+
+
+    public void setWidgetUnderMouse(CWidget widget) {
+        widgetUnderMouse = widget;
+    }
+
+
+    public CWidget getWidgetUnderMouse() {
+        return widgetUnderMouse;
     }
 }

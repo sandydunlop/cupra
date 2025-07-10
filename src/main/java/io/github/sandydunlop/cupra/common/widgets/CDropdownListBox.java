@@ -118,6 +118,7 @@ public class CDropdownListBox extends CWidget {
 
     public void setSelectedIndex(int index) {
         listbox.setSelectedIndex(index);
+        textbox.setText(listbox.getSelected().getText());
     }   
 
 
@@ -138,6 +139,7 @@ public class CDropdownListBox extends CWidget {
      */
     public void setSelected(CListBoxEntry entry) {
         listbox.setSelected(entry);
+        textbox.setText(entry.getText());
     }
 
 
@@ -237,12 +239,12 @@ public class CDropdownListBox extends CWidget {
      * @param delta the time elapsed since the last frame, in seconds
      */
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
-        super.render(renderer, mouseX, mouseY, delta);
+    public void render(BaseRenderer renderer, CMouseEvent mouse) {
+        super.render(renderer, mouse);
         positionChildren();
-        textbox.render(renderer, mouseX, mouseY, delta);
-        button.render(renderer, mouseX, mouseY, delta);
-        listbox.render(renderer, mouseX, mouseY, delta);
+        textbox.render(renderer, mouse);
+        button.render(renderer, mouse);
+        listbox.render(renderer, mouse);
         if (this.getDebug() != 0){
             renderer.drawRectangle(getCalculatedX(), getCalculatedY(), getCalculatedX()+getWidth(), getCalculatedY()+getHeight(), this.getDebug());
         }

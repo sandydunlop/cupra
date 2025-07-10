@@ -6,6 +6,7 @@ import java.util.List;
 import io.github.sandydunlop.cupra.common.render.BaseRenderer;
 import io.github.sandydunlop.cupra.common.util.Align;
 import io.github.sandydunlop.cupra.common.util.DepthLimit;
+import io.github.sandydunlop.cupra.common.util.Orientation;
 import io.github.sandydunlop.cupra.common.CupraException;
 import io.github.sandydunlop.cupra.common.events.CMouseEvent;
 import io.github.sandydunlop.cupra.common.fonts.FontSpec;
@@ -19,9 +20,10 @@ public class CContainer extends CWidget {
 	protected int containerBackgroundColor = CWidget.getPalette().REGULAR_BACKGROUND;
 	protected boolean containerHasBorder = false;
 	protected int containerBorderColor = CWidget.getPalette().HOVERED_BORDER;
+	protected int topOffset = 0;
 
 
-    public CContainer(CContainer parent, boolean isHorizontal) {
+    public CContainer(CContainer parent, Orientation orientation) {
 		super(parent);
 		if (parent != null){
 			parent.add(this);
@@ -29,9 +31,15 @@ public class CContainer extends CWidget {
 			this.setMaxWidth(parent.getWidth());
 		}
 		this.parent = parent;
-        this.isHorizontal = isHorizontal;
-		this.padding = 4;
+        this.isHorizontal = orientation == Orientation.HORIZONTAL;
+		this.padding = 4; //TODO: What happened to this?
 		this.expandable = true;
+	}
+
+
+	@Deprecated
+    public CContainer(CContainer parent, boolean isHorizontal) {
+		this(parent, isHorizontal ? Orientation.HORIZONTAL : Orientation.VERTICAL);
 	}
 
 
@@ -45,6 +53,16 @@ public class CContainer extends CWidget {
 
 
 	// === Properties ===
+
+
+	public void setTopOffset(int gap) {
+		topOffset = gap;
+	}
+
+
+	public int getTopOffset() {
+		return topOffset;
+	}
 
 
 	public void setParent(CContainer parent){
@@ -142,7 +160,7 @@ public class CContainer extends CWidget {
         if (parent != null){
             return parent.getCalculatedY() + y;
         }else{
-            return y;
+            return y + topOffset;
         }
     }
 
@@ -152,8 +170,12 @@ public class CContainer extends CWidget {
 	}
 
 
-	public void add(CWidget widget){
-		this.contents.add(widget);
+	public void add(Object... o) {
+		if (o == null || o.length != 1) return;
+
+		if (o[0] instanceof CWidget widget) {
+			this.contents.add(widget);
+		}
 	}
 
 
@@ -224,8 +246,13 @@ public class CContainer extends CWidget {
 			} else {
 				if (widget.getClass() == CContainer.class) {
 					widget.setWidth(width  - padding*2);
-				} else  if (widget.getWidth() == 0) {
-					widget.setWidth(widget.getCalculatedWidth());
+				} else  {
+					if (widget.getHeight() == 0) {
+						widget.setHeight(widget.getCalculatedHeight());
+					}
+					if (widget.getWidth() == 0) {
+						widget.setWidth(widget.getCalculatedWidth());
+					}
 				}
 				int h = widget.getCalculatedHeight();
 				if (widget instanceof CContainer) {
@@ -284,8 +311,13 @@ public class CContainer extends CWidget {
 				}
 				if (widget.getClass() == CContainer.class) {
 					widget.setHeight(height - (padding*2));
-				} else  if (widget.getHeight() == 0) {
-					widget.setHeight(widget.getCalculatedHeight());
+				} else  {
+					if (widget.getHeight() == 0) {
+						widget.setHeight(widget.getCalculatedHeight());
+					}
+					if (widget.getWidth() == 0) {
+						widget.setWidth(widget.getCalculatedWidth());
+					}
 				}
 				nonexSize += widget.getWidth() + padding;
 			}
@@ -328,7 +360,7 @@ public class CContainer extends CWidget {
 
 
 	@Override
-	public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
+	public void render(BaseRenderer renderer, CMouseEvent mouse) {
         if (this.isVisible()) {
 			int renderWidth = getWidth()>0 ? getWidth() - (padding*2): 80;
 			int renderHeight = getHeight()>0 ? getHeight() - (padding*2): 20;
@@ -342,7 +374,7 @@ public class CContainer extends CWidget {
 					break;
 				}
 				if (widgetY + widget.getHeight() >= 0) {
-					widget.render(renderer, mouseX, mouseY, delta);
+					widget.render(renderer, mouse);
 				}
 			}
 			if (this.containerHasBorder) {

@@ -7,6 +7,7 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 
 import io.github.sandydunlop.cupra.common.CupraException;
+import io.github.sandydunlop.cupra.common.events.CMouseEvent;
 import io.github.sandydunlop.cupra.common.render.BaseRenderer;
 
 
@@ -42,7 +43,7 @@ public class CImage extends CWidget {
 
 
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
+    public void render(BaseRenderer renderer, CMouseEvent mouse) {
         int iconWidth = getWidth();
         int iconHeight = getHeight();
         int iconX = getCalculatedX();

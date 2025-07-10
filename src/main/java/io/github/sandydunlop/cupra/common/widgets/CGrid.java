@@ -70,7 +70,7 @@ public class CGrid extends CContainer {
 
 
     @Override
-	public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
+	public void render(BaseRenderer renderer, CMouseEvent mouse) {
 		if (this.getDebug() != 0){
 			int renderWidth = getWidth()>0 ? getWidth() : 80;
 			int renderHeight = getHeight()>0 ? getHeight() : 20;
@@ -103,7 +103,7 @@ public class CGrid extends CContainer {
             }
             widget.setWidth(cellWidth);
             widget.setHeight(cellWidth);
-            widget.render(renderer, mouseX, mouseY, delta);
+            widget.render(renderer, mouse);
             onThisRow++;
             cellX += cellWidth + horizontalPadding;
             if (onThisRow >= widthInCells){

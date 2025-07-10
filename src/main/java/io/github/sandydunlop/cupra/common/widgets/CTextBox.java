@@ -130,7 +130,7 @@ public class CTextBox extends CLabel {
 
 
     @Override
-    public void render(BaseRenderer renderer, int mouseX, int mouseY, float delta) {
+    public void render(BaseRenderer renderer, CMouseEvent mouse) {
         bmf = BitmapFontFactory.load(font);
         int renderWidth = getWidth();
         int renderHeight = getHeight();
